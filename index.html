@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus Conect</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/bundle.js"></script>
+</head>
+<body>
+    <div id="nexus-app">
+        <header>
+            <h1 id="app-title">Nexus Conect</h1>
+            <select id="lang-selector" onchange="changeLanguage(this.value)">
+                <option value="pt">Português</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+            </select>
+        </header>
+
+        <main id="room-container">
+            <div id="user-grid"></div>
+        </main>
+
+        <footer id="controls">
+            <button id="btn-voice" onclick="toggleVoice()">Entrar na Voz</button>
+        </footer>
+    </div>
+    <script src="main.js"></script>
+</body>
+</html>
