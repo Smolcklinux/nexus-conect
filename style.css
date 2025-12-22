@@ -1,45 +1,35 @@
-body {
-    background-color: #0f0c29;
-    color: white;
-    font-family: 'Segoe UI', sans-serif;
-    margin: 0;
-    display: flex;
-    justify-content: center;
+:root {
+    --primary: #6a11cb;
+    --vip-gold: #ffd700;
+    --bg: #0f0c29;
 }
 
-#nexus-app {
-    width: 100%;
-    max-width: 400px;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
+body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; }
+.hidden { display: none !important; }
+
+/* Auth Styling */
+.auth-container { display: flex; flex-direction: column; padding: 50px 20px; align-items: center; }
+input { width: 80%; padding: 12px; margin: 10px; border-radius: 8px; border: none; }
+
+/* Room Styling */
+header { display: flex; justify-content: space-between; padding: 20px; }
+.avatar-grid { height: 50vh; display: flex; justify-content: center; align-items: center; }
+
+.avatar-wrapper { position: relative; width: 140px; height: 140px; }
+.avatar-wrapper img { 
+    width: 100%; border-radius: 50%; border: 4px solid var(--primary); 
+    position: relative; z-index: 2; cursor: pointer;
 }
 
-#user-grid {
-    flex-grow: 1;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-    border: 2px solid transparent;
-    transition: 0.3s;
-}
+.is-vip img { border-color: var(--vip-gold) !important; }
+#vip-tag { position: absolute; bottom: 0; left: 35%; background: var(--vip-gold); color: black; font-weight: bold; padding: 2px 10px; border-radius: 10px; z-index: 10; }
 
-.speaking {
-    box-shadow: 0 0 20px #ffd700;
+/* Glow Animation */
+.glow-ring { 
+    position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; 
+    border-radius: 50%; background: radial-gradient(circle, rgba(106,17,203,0.4) 0%, transparent 70%);
+    opacity: 0; transition: 0.1s;
 }
+.speaking .glow-ring { opacity: 1; transform: scale(1.2); }
 
-#btn-voice {
-    width: 100%;
-    padding: 15px;
-    border-radius: 30px;
-    border: none;
-    background: linear-gradient(to right, #6a11cb, #2575fc);
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-#btn-voice.active {
-    background: #ff4b2b;
-}
+button { background: linear-gradient(45deg, #6a11cb, #2575fc); color: white; border: none; padding: 15px 40px; border-radius: 30px; width: 80%; }

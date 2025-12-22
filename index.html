@@ -9,24 +9,46 @@
     <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/bundle.js"></script>
 </head>
 <body>
-    <div id="nexus-app">
-        <header>
-            <h1 id="app-title">Nexus Conect</h1>
-            <select id="lang-selector" onchange="changeLanguage(this.value)">
-                <option value="pt">Português</option>
-                <option value="en">English</option>
-                <option value="es">Español</option>
-            </select>
-        </header>
+    <div id="app">
+        <div id="auth-screen" class="auth-container">
+            <h1>Nexus Conect</h1>
+            <input type="email" id="email" placeholder="E-mail">
+            <input type="password" id="password" placeholder="Senha">
+            <div class="auth-buttons">
+                <button onclick="handleLogin()">Entrar</button>
+                <button onclick="handleSignUp()" class="secondary">Cadastrar</button>
+            </div>
+        </div>
 
-        <main id="room-container">
-            <div id="user-grid"></div>
-        </main>
+        <div id="main-screen" class="hidden">
+            <header>
+                <h2 id="txt-logo">Nexus Conect</h2>
+                <select id="lang-select" onchange="updateLanguage(this.value)">
+                    <option value="pt">Português</option>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                </select>
+            </header>
 
-        <footer id="controls">
-            <button id="btn-voice" onclick="toggleVoice()">Entrar na Voz</button>
-        </footer>
+            <main id="room-view">
+                <div class="avatar-grid">
+                    <div class="avatar-wrapper" id="local-user">
+                        <div class="glow-ring"></div>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" id="user-img" onclick="triggerFileUpload()">
+                        <span id="vip-tag" class="hidden">VIP</span>
+                    </div>
+                </div>
+                <input type="file" id="file-input" class="hidden" accept="image/*" onchange="uploadPhoto(this)">
+            </main>
+
+            <footer>
+                <button id="btn-action" onclick="handleAction()">Entrar na Voz</button>
+            </footer>
+        </div>
     </div>
+
+    <script src="translations.js"></script>
+    <script src="auth.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
