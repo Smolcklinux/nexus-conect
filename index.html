@@ -5,13 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Conect | Voice Experience</title>
     <link rel="stylesheet" href="./css/auth.css">
+    <link rel="stylesheet" href="./css/main.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Estilos específicos para o Stage de Cadeiras */
+        .stage-canvas {
+            max-width: 500px !important;
+            padding: 20px !important;
+            background: #050505 !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .stage-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: var(--cyan-neon);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .top-stage { margin-bottom: 30px; }
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+        .slot-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .slot {
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            border: 2px solid #1a1a1a;
+            background: #0d0d0d;
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .owner-slot {
+            width: 90px;
+            height: 90px;
+            border-color: var(--purple-neon);
+            box-shadow: 0 0 15px rgba(188, 0, 255, 0.2);
+        }
+        .slot.occupied { border-color: var(--cyan-neon); }
+        .slot.speaking { border-color: var(--cyan-neon); box-shadow: 0 0 20px var(--cyan-neon); }
+        .slot img { width: 100%; height: 100%; object-fit: cover; }
+        .slot-label { font-size: 8px; color: #444; font-weight: bold; }
+        .stage-controls {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        .btn-mic {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 2px solid var(--cyan-neon);
+            background: transparent;
+            color: var(--cyan-neon);
+            cursor: pointer;
+            font-size: 10px;
+            margin: 0 auto;
+            transition: 0.3s;
+        }
+        .btn-mic.active { background: var(--cyan-neon); color: #000; box-shadow: 0 0 20px var(--cyan-neon); }
+    </style>
 </head>
 <body>
 
     <div id="loading-screen" class="loading-overlay">
         <div class="loader"></div>
-        <p style="margin-top: 15px; font-size: 10px; letter-spacing: 2px;">SYNCHRONIZING...</p>
+        <p style="margin-top: 15px; font-size: 10px; letter-spacing: 2px;">NEXUS SYSTEM LOADING...</p>
     </div>
 
     <div id="age-section" class="auth-container">
@@ -27,22 +105,20 @@
     <div id="auth-section" class="auth-container hidden">
         <div class="glass-card">
             <div class="nexus-logo-neon">N</div>
-            
             <div id="login-form">
                 <h2 class="welcome-text">LOGIN</h2>
                 <input type="email" id="login-email" placeholder="E-MAIL" class="nexus-input">
                 <input type="password" id="login-password" placeholder="SENHA" class="nexus-input">
                 <button id="btn-login" class="btn-outline-cyan">ENTRAR</button>
-                <p class="auth-footer">NÃO TEM CONTA? <span onclick="toggleAuth()">REGISTRE-SE</span></p>
+                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">NÃO TEM CONTA? <span onclick="toggleAuth()" style="color: var(--cyan-neon)">REGISTRE-SE</span></p>
             </div>
-
             <div id="register-form" class="hidden">
                 <h2 class="welcome-text">CADASTRO</h2>
                 <input type="text" id="reg-username" placeholder="NOME" class="nexus-input">
                 <input type="email" id="reg-email" placeholder="E-MAIL" class="nexus-input">
                 <input type="password" id="reg-password" placeholder="SENHA" class="nexus-input">
                 <button id="btn-register" class="btn-outline-purple">CRIAR CONTA</button>
-                <p class="auth-footer">JÁ TEM CONTA? <span onclick="toggleAuth()">FAZER LOGIN</span></p>
+                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">JÁ TEM CONTA? <span onclick="toggleAuth()" style="color: var(--purple-neon)">FAZER LOGIN</span></p>
             </div>
         </div>
     </div>
@@ -52,51 +128,58 @@
             <h2 class="welcome-text">PERFIL</h2>
             <div class="avatar-main-wrapper" style="position: relative; width: 100px; margin: 0 auto 20px;">
                 <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" id="main-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--cyan-neon);">
-                <label for="file-upload" style="position: absolute; bottom: 0; right: 0; background: var(--purple-neon); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">📷</label>
+                <label for="file-upload" style="position: absolute; bottom: 0; right: 0; background: var(--purple-neon); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px;">UP</label>
                 <input type="file" id="file-upload" accept="image/*" class="hidden">
             </div>
-
-            <div class="avatar-selection">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="avatar-opt selected" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" class="avatar-opt" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Max" class="avatar-opt" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Max">
-            </div>
-
             <input type="hidden" id="selected-avatar-url" value="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
             <input type="text" id="setup-nickname" placeholder="@username" class="nexus-input">
-            
-            <div id="interest-tags" class="tags-container" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px 0;">
-                <span class="tag" data-value="Games">GAMES</span>
-                <span class="tag" data-value="Tech">TECH</span>
-                <span class="tag" data-value="Music">MUSIC</span>
-            </div>
-
+            <textarea id="setup-bio" placeholder="SUA BIO..." class="nexus-input" style="height: 80px;"></textarea>
             <button id="btn-save-setup" class="btn-outline-cyan">SALVAR E ENTRAR</button>
         </div>
     </div>
 
     <div id="app-section" class="auth-container hidden">
-        <div class="glass-card" style="max-width: 450px;">
-            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 20px; color: var(--cyan-neon);">
-                <span>STAGE LIVE</span>
-                <span id="room-count">0 ONLINE</span>
+        <div class="glass-card stage-canvas">
+            <div class="stage-header">
+                <div class="room-id-badge">ID: <span id="display-room-id">---</span></div>
+                <div id="room-count">0 ONLINE</div>
             </div>
 
-            <div class="equalizer-container">
-                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-            </div>
-
-            <div id="stage-users" class="users-grid">
+            <div class="top-stage">
+                <div class="slot-node">
+                    <div class="slot owner-slot" id="slot-0" onclick="handleSeatAction(0)"></div>
+                    <span class="slot-label">ADMIN</span>
                 </div>
+            </div>
 
-            <div style="margin-top: 30px; display: flex; gap: 10px;">
-                <button id="btn-mic-toggle" class="btn-mic">🎙️</button>
-                <button id="btn-logout" class="btn-outline-purple" style="margin-bottom: 0;">SAIR</button>
+            <div class="slots-grid">
+                <div class="slot-node"><div class="slot" id="slot-1" onclick="handleSeatAction(1)"></div><span class="slot-label">01</span></div>
+                <div class="slot-node"><div class="slot" id="slot-2" onclick="handleSeatAction(2)"></div><span class="slot-label">02</span></div>
+                <div class="slot-node"><div class="slot" id="slot-3" onclick="handleSeatAction(3)"></div><span class="slot-label">03</span></div>
+                <div class="slot-node"><div class="slot" id="slot-4" onclick="handleSeatAction(4)"></div><span class="slot-label">04</span></div>
+                <div class="slot-node"><div class="slot" id="slot-5" onclick="handleSeatAction(5)"></div><span class="slot-label">05</span></div>
+                <div class="slot-node"><div class="slot" id="slot-6" onclick="handleSeatAction(6)"></div><span class="slot-label">06</span></div>
+                <div class="slot-node"><div class="slot" id="slot-7" onclick="handleSeatAction(7)"></div><span class="slot-label">07</span></div>
+                <div class="slot-node"><div class="slot" id="slot-8" onclick="handleSeatAction(8)"></div><span class="slot-label">08</span></div>
+            </div>
+
+            <div class="stage-controls">
+                <button id="btn-mic-toggle" class="btn-mic" onclick="toggleMic()">MIC</button>
+                <div style="display: flex; gap: 10px; width: 100%;">
+                    <button id="btn-share" class="btn-outline-cyan" onclick="shareInvite()" style="flex: 1; font-size: 10px;">CONVIDAR</button>
+                    <button id="btn-logout-nexus" class="btn-outline-purple" style="flex: 1; font-size: 10px;">SAIR</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <script type="module" src="./main.js"></script>
+    <script type="module" src="./js/main.js"></script>
+    <script>
+        // Funções globais para botões onclick
+        function toggleAuth() {
+            document.getElementById('login-form').classList.toggle('hidden');
+            document.getElementById('register-form').classList.toggle('hidden');
+        }
+    </script>
 </body>
 </html>

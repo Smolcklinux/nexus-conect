@@ -1,231 +1,236 @@
 import { nexusClient } from './config.js';
 
+// Seletores de UI
 const ui = {
     loading: document.getElementById('loading-screen'),
     age: document.getElementById('age-section'),
     auth: document.getElementById('auth-section'),
     setup: document.getElementById('setup-section'),
     app: document.getElementById('app-section'),
-    loginForm: document.getElementById('login-form'),
-    registerForm: document.getElementById('register-form')
+    roomIdDisplay: document.getElementById('display-room-id')
 };
 
-let audioCtx, analyser, dataArray, source;
-const selectedInterests = new Set();
+// Variáveis de Estado
+let myActiveSlot = null;
+let isMicMuted = true;
+let localStream = null;
+let currentRoomId = null;
+let audioCtx, analyser, dataArray;
 
-// 1. INICIALIZAÇÃO
-async function initApp() {
-    ui.loading?.classList.add('hidden');
-}
-
-// 2. EQUALIZADOR DE VOZ (Visualização Dinâmica)
-async function startVisualizer() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser();
-        source = audioCtx.createMediaStreamSource(stream);
-        source.connect(analyser);
-        analyser.fftSize = 32;
-        dataArray = new Uint8Array(analyser.frequencyBinCount);
-        
-        const bars = document.querySelectorAll('.bar');
-        
-        function render() {
-            requestAnimationFrame(render);
-            analyser.getByteFrequencyData(dataArray);
-            bars.forEach((bar, i) => {
-                const val = (dataArray[i] / 255) * 100;
-                bar.style.height = `${Math.max(10, val)}%`;
-                // Brilho dinâmico conforme a voz
-                bar.style.boxShadow = `0 0 ${val/5}px var(--cyan-neon)`;
-            });
-        }
-        render();
-    } catch (e) { 
-        console.error("Acesso ao microfone negado ou erro no AudioContext:", e); 
-    }
-}
-
-// 3. PRESENÇA EM TEMPO REAL (Sala de Voz)
-function enterStage(profile) {
-    const channel = nexusClient.channel('stage-01', {
-        config: { presence: { key: profile.id } }
-    });
+/**
+ * 1. INICIALIZAÇÃO E CONTROLE DE SALAS
+ */
+async function init() {
+    ui.loading.classList.add('hidden');
     
+    // Verifica se veio por convite
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteId = urlParams.get('room');
+    
+    // Escuta mudanças de auth
+    nexusClient.auth.onAuthStateChange(async (event, session) => {
+        if (session) {
+            const { data: profile } = await nexusClient.from('profiles').select('*').eq('id', session.user.id).single();
+            if (!profile.custom_id) {
+                showSection('setup');
+            } else {
+                handleRoomEntry(session.user.id, inviteId);
+            }
+        }
+    });
+}
+
+async function handleRoomEntry(userId, inviteId) {
+    if (inviteId) {
+        currentRoomId = inviteId;
+    } else {
+        // Tenta buscar a sala do usuário (Dono)
+        let { data: room } = await nexusClient.from('rooms').select('*').eq('owner_id', userId).maybeSingle();
+        if (!room) {
+            const { data: newRoom } = await nexusClient.from('rooms').insert([{ owner_id: userId, room_name: "NEXUS STAGE" }]).select().single();
+            room = newRoom;
+        }
+        currentRoomId = room.id;
+    }
+    
+    ui.roomIdDisplay.innerText = currentRoomId.substring(0, 8);
+    showSection('app');
+    setupPresence(userId);
+}
+
+/**
+ * 2. SISTEMA DE CADEIRAS E PRESENÇA
+ */
+function setupPresence(userId) {
+    const channel = nexusClient.channel(`room_${currentRoomId}`, {
+        config: { presence: { key: userId } }
+    });
+
     channel
         .on('presence', { event: 'sync' }, () => {
             const state = channel.presenceState();
-            updateStageUI(state);
+            renderSlots(state);
         })
         .subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-                await channel.track({
-                    id: profile.id,
-                    nick: profile.custom_id || 'Nexus User',
-                    avatar: profile.avatar_url
-                });
+                const { data: prof } = await nexusClient.from('profiles').select('*').eq('id', userId).single();
+                updateTrack(channel, prof);
             }
         });
+
+    // Função global para atualizar o estado no Realtime
+    window.syncState = async () => {
+        const { data: prof } = await nexusClient.from('profiles').select('*').eq('id', userId).single();
+        await channel.track({
+            id: userId,
+            nick: prof.custom_id,
+            avatar: prof.avatar_url,
+            slot: myActiveSlot,
+            muted: isMicMuted
+        });
+    };
 }
 
-function updateStageUI(state) {
-    const grid = document.getElementById('stage-users');
-    const count = document.getElementById('room-count');
-    if(!grid) return;
+function renderSlots(state) {
+    // Reseta visual dos slots
+    document.querySelectorAll('.slot').forEach(s => {
+        s.innerHTML = '';
+        s.classList.remove('occupied', 'speaking');
+    });
 
-    grid.innerHTML = '';
     const users = Object.values(state);
-    count.innerText = `${users.length} ONLINE`;
-    
-    users.forEach(u => {
-        const user = u[0];
-        grid.innerHTML += `
-            <div class="user-node">
-                <img src="${user.avatar}" class="node-img">
-                <span style="font-size: 10px; color: #fff; margin-top:5px;">${user.nick}</span>
-            </div>
-        `;
-    });
-}
+    document.getElementById('room-count').innerText = `${users.length} ONLINE`;
 
-// 4. LOGICA DE AUTH & SETUP
-document.getElementById('btn-age-yes')?.addEventListener('click', () => {
-    ui.age.classList.add('hidden');
-    ui.auth.classList.remove('hidden');
-});
-
-document.getElementById('btn-login')?.addEventListener('click', async () => {
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-password').value;
-
-    ui.loading.classList.remove('hidden');
-    const { data, error } = await nexusClient.auth.signInWithPassword({ email, password: pass });
-    
-    if (error) {
-        ui.loading.classList.add('hidden');
-        return alert("Erro: " + error.message);
-    }
-    
-    const { data: profile } = await nexusClient.from('profiles').select('*').eq('id', data.session.user.id).single();
-    
-    ui.loading.classList.add('hidden');
-    ui.auth.classList.add('hidden');
-    ui.app.classList.remove('hidden');
-    
-    enterStage(profile);
-    startVisualizer();
-});
-
-document.getElementById('btn-register')?.addEventListener('click', async () => {
-    const email = document.getElementById('reg-email').value;
-    const pass = document.getElementById('reg-password').value;
-    const user = document.getElementById('reg-username').value;
-
-    ui.loading.classList.remove('hidden');
-    const { error } = await nexusClient.auth.signUp({ 
-        email, 
-        password: pass, 
-        options: { data: { display_name: user } } 
-    });
-
-    ui.loading.classList.add('hidden');
-    if (error) return alert(error.message);
-
-    document.getElementById('setup-nickname').value = user;
-    ui.auth.classList.add('hidden');
-    ui.setup.classList.remove('hidden');
-});
-
-// 5. UPLOAD DE IMAGEM PARA O STORAGE
-document.getElementById('file-upload')?.addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    ui.loading.classList.remove('hidden');
-    try {
-        const { data: { session } } = await nexusClient.auth.getSession();
-        const fileExt = file.name.split('.').pop();
-        const filePath = `${session.user.id}/${Date.now()}.${fileExt}`;
-
-        const { error: uploadError } = await nexusClient.storage
-            .from('avatars')
-            .upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = nexusClient.storage
-            .from('avatars')
-            .getPublicUrl(filePath);
-
-        document.getElementById('main-avatar-preview').src = publicUrl;
-        document.getElementById('selected-avatar-url').value = publicUrl;
-        
-        // Desmarca avatares padrão se subiu um personalizado
-        document.querySelectorAll('.avatar-opt').forEach(i => i.classList.remove('selected'));
-        
-    } catch (err) {
-        alert("Erro no upload: " + err.message);
-    } finally {
-        ui.loading.classList.add('hidden');
-    }
-});
-
-// 6. TAGS DE INTERESSE (Lógica funcional)
-document.querySelectorAll('.tag').forEach(tag => {
-    tag.addEventListener('click', () => {
-        const val = tag.dataset.value;
-        if (selectedInterests.has(val)) {
-            selectedInterests.delete(val);
-            tag.classList.remove('active');
-        } else {
-            selectedInterests.add(val);
-            tag.classList.add('active');
+    users.forEach(presence => {
+        const u = presence[0];
+        if (u.slot !== null) {
+            const el = document.getElementById(`slot-${u.slot}`);
+            if (el) {
+                el.classList.add('occupied');
+                el.innerHTML = `<img src="${u.avatar}">`;
+                if (!u.muted) el.classList.add('speaking');
+            }
         }
     });
-});
+}
 
-// 7. FINALIZAR SETUP
-document.getElementById('btn-save-setup')?.addEventListener('click', async () => {
-    ui.loading.classList.remove('hidden');
-    const { data: { session } } = await nexusClient.auth.getSession();
-    
-    const updates = {
-        custom_id: document.getElementById('setup-nickname').value,
-        profile_bio: document.getElementById('setup-bio').value || '',
-        avatar_url: document.getElementById('selected-avatar-url').value,
-        interests: Array.from(selectedInterests)
-    };
-
-    const { error } = await nexusClient.from('profiles').update(updates).eq('id', session.user.id);
-    
-    if (error) {
-        ui.loading.classList.add('hidden');
-        return alert("Erro ao salvar perfil: " + error.message);
+/**
+ * 3. CONTROLE DE MICROFONE E ÁUDIO
+ */
+window.handleSeatAction = async (slotId) => {
+    if (myActiveSlot === slotId) {
+        myActiveSlot = null;
+        stopMicrophone();
+    } else {
+        myActiveSlot = slotId;
+        await startMicrophone();
     }
-
-    location.reload(); // Recarrega para entrar na sala logado
-});
-
-// 8. LOGOUT
-document.getElementById('btn-logout')?.addEventListener('click', async () => {
-    await nexusClient.auth.signOut();
-    location.reload();
-});
-
-// LISTENERS DE AVATARES PADRÃO
-document.querySelectorAll('.avatar-opt').forEach(img => {
-    img.addEventListener('click', () => {
-        document.querySelectorAll('.avatar-opt').forEach(i => i.classList.remove('selected'));
-        img.classList.add('selected');
-        document.getElementById('main-avatar-preview').src = img.dataset.url;
-        document.getElementById('selected-avatar-url').value = img.dataset.url;
-    });
-});
-
-window.toggleAuth = () => {
-    ui.loginForm.classList.toggle('hidden');
-    ui.registerForm.classList.toggle('hidden');
+    window.syncState();
 };
 
-initApp();
+async function startMicrophone() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        isMicMuted = false;
+        initVUMeter(localStream);
+        updateMicUI();
+    } catch (e) {
+        alert("Erro ao acessar microfone.");
+        myActiveSlot = null;
+    }
+}
+
+function stopMicrophone() {
+    if (localStream) {
+        localStream.getTracks().forEach(t => t.stop());
+        localStream = null;
+    }
+    isMicMuted = true;
+    updateMicUI();
+}
+
+window.toggleMic = () => {
+    if (!myActiveSlot) return alert("Sente-se primeiro!");
+    isMicMuted = !isMicMuted;
+    localStream.getAudioTracks()[0].enabled = !isMicMuted;
+    updateMicUI();
+    window.syncState();
+};
+
+function updateMicUI() {
+    const btn = document.getElementById('btn-mic-toggle');
+    if (isMicMuted) {
+        btn.classList.remove('active');
+        btn.innerText = "MIC OFF";
+    } else {
+        btn.classList.add('active');
+        btn.innerText = "MIC ON";
+    }
+}
+
+/**
+ * 4. VUMETER (PULSAÇÃO VISUAL)
+ */
+function initVUMeter(stream) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+    const source = audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+    analyser.fftSize = 64;
+    dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+    function animate() {
+        if (!myActiveSlot || isMicMuted) return;
+        analyser.getByteFrequencyData(dataArray);
+        const volume = dataArray.reduce((a, b) => a + b) / dataArray.length;
+        
+        const el = document.getElementById(`slot-${myActiveSlot}`);
+        if (el && volume > 15) {
+            el.style.transform = `scale(${1 + volume/200})`;
+            el.style.boxShadow = `0 0 ${volume}px var(--cyan-neon)`;
+        } else if (el) {
+            el.style.transform = `scale(1)`;
+            el.style.boxShadow = `none`;
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+/**
+ * 5. AUXILIARES E EVENTOS
+ */
+function showSection(name) {
+    Object.values(ui).forEach(s => s?.classList?.add('hidden'));
+    ui[name].classList.remove('hidden');
+}
+
+window.shareInvite = () => {
+    const link = `${window.location.origin}${window.location.pathname}?room=${currentRoomId}`;
+    navigator.clipboard.writeText(link);
+    alert("LINK DE CONVITE COPIADO!");
+};
+
+// Eventos de Botões
+document.getElementById('btn-age-yes').onclick = () => showSection('auth');
+
+document.getElementById('btn-login').onclick = async () => {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-password').value;
+    const { error } = await nexusClient.auth.signInWithPassword({ email, password: pass });
+    if (error) alert(error.message);
+};
+
+document.getElementById('btn-register').onclick = async () => {
+    const email = document.getElementById('reg-email').value;
+    const pass = document.getElementById('reg-password').value;
+    const { error } = await nexusClient.auth.signUp({ email, password: pass });
+    if (error) alert(error.message);
+};
+
+document.getElementById('btn-logout-nexus').onclick = () => {
+    nexusClient.auth.signOut();
+    location.reload();
+};
+
+init();

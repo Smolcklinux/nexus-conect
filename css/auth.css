@@ -1,68 +1,221 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
 
 :root {
     --cyan-neon: #00f2ff;
     --purple-neon: #bc00ff;
     --bg-dark: #050505;
+    --glass: rgba(15, 15, 15, 0.95);
+    --border-dim: #1a1a1a;
 }
 
-body { background: var(--bg-dark); margin: 0; font-family: 'Inter', sans-serif; color: white; overflow: hidden; }
+/* 1. RESET E BASE */
+body { 
+    background: var(--bg-dark); 
+    margin: 0; 
+    font-family: 'Inter', sans-serif; 
+    color: white; 
+    overflow: hidden; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
 
-.auth-container { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at center, #1a1a2e 0%, #050505 100%); }
-
-.glass-card {
-    background: rgba(15, 15, 15, 0.9);
+.auth-container { 
     width: 100%;
-    max-width: 380px;
-    padding: 40px;
+    height: 100%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background: radial-gradient(circle at center, #0a0a15 0%, #050505 100%); 
+}
+
+/* 2. CARD GLASSMORPHISM */
+.glass-card {
+    background: var(--glass);
+    width: 100%;
+    max-width: 400px;
+    padding: 35px;
     border-radius: 40px;
-    border: 2px solid var(--purple-neon);
-    box-shadow: 0 0 30px rgba(188, 0, 255, 0.2);
+    border: 1px solid var(--border-dim);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
     text-align: center;
     box-sizing: border-box;
+    position: relative;
+    backdrop-filter: blur(10px);
 }
 
 .nexus-logo-neon {
-    font-size: 60px;
-    font-weight: bold;
+    font-size: 50px;
+    font-weight: 900;
     color: transparent;
-    -webkit-text-stroke: 1px var(--cyan-neon);
-    filter: drop-shadow(0 0 10px var(--cyan-neon));
-    margin-bottom: 5px;
+    -webkit-text-stroke: 1.5px var(--cyan-neon);
+    filter: drop-shadow(0 0 15px var(--cyan-neon));
+    margin-bottom: 10px;
 }
 
-.welcome-text { font-size: 18px; font-weight: bold; margin-bottom: 30px; letter-spacing: 1px; }
-
+/* 3. INPUTS E BOTÕES */
 .nexus-input {
-    width: 100%; background: transparent; border: 1px solid #333; border-radius: 12px;
-    padding: 16px; color: #fff; margin-bottom: 15px; box-sizing: border-box; outline: none; transition: 0.3s;
+    width: 100%; 
+    background: #0d0d0d; 
+    border: 1px solid var(--border-dim); 
+    border-radius: 12px;
+    padding: 16px; 
+    color: #fff; 
+    margin-bottom: 12px; 
+    box-sizing: border-box; 
+    outline: none; 
+    transition: 0.3s;
+    font-family: 'Inter', sans-serif;
 }
 
-.nexus-input:focus { border-color: var(--cyan-neon); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+.nexus-input:focus { 
+    border-color: var(--cyan-neon); 
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.15); 
+}
 
 .btn-outline-cyan, .btn-outline-purple {
-    width: 100%; padding: 15px; background: transparent; border-radius: 12px; font-weight: bold;
-    cursor: pointer; margin-bottom: 15px; transition: 0.3s; text-transform: uppercase; letter-spacing: 1px;
+    width: 100%; 
+    padding: 15px; 
+    background: transparent; 
+    border-radius: 12px; 
+    font-weight: 800;
+    cursor: pointer; 
+    margin-bottom: 12px; 
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    text-transform: uppercase; 
+    letter-spacing: 2px;
+    font-size: 11px;
 }
 
 .btn-outline-cyan { border: 2px solid var(--cyan-neon); color: var(--cyan-neon); }
 .btn-outline-purple { border: 2px solid var(--purple-neon); color: var(--purple-neon); }
-.btn-outline-cyan:hover { background: var(--cyan-neon); color: #000; box-shadow: 0 0 20px var(--cyan-neon); }
 
-/* STAGE COMPONENTS */
-.equalizer-container { height: 60px; display: flex; align-items: flex-end; justify-content: center; gap: 5px; margin-bottom: 30px; }
-.bar { width: 8px; height: 10%; background: var(--cyan-neon); border-radius: 4px; transition: 0.1s; }
+.btn-outline-cyan:hover { 
+    background: var(--cyan-neon); 
+    color: #000; 
+    box-shadow: 0 0 30px var(--cyan-neon); 
+}
 
-.users-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-height: 250px; overflow-y: auto; }
-.btn-mic { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--cyan-neon); background: transparent; color: white; cursor: pointer; font-size: 20px; }
+/* 4. LAYOUT DO STAGE (CADEIRAS) */
+.stage-canvas {
+    border: 1px solid rgba(188, 0, 255, 0.3); /* Borda levemente roxa */
+}
 
-.tag { padding: 8px 15px; border: 1px solid #333; border-radius: 20px; font-size: 10px; cursor: pointer; transition: 0.3s; }
-.tag.active { border-color: var(--cyan-neon); color: var(--cyan-neon); background: rgba(0, 242, 255, 0.1); }
+.top-stage {
+    margin: 20px 0 35px 0;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
 
-.avatar-opt { width: 55px; height: 55px; border-radius: 50%; border: 2px solid #333; cursor: pointer; }
-.avatar-opt.selected { border-color: var(--cyan-neon); transform: scale(1.1); }
+/* O Trono do Admin */
+.owner-slot {
+    width: 95px !important;
+    height: 95px !important;
+    border: 3px solid var(--purple-neon) !important;
+    box-shadow: 0 0 20px rgba(188, 0, 255, 0.3);
+    position: relative;
+}
+
+.owner-slot::after {
+    content: 'ADMIN';
+    position: absolute;
+    bottom: -20px;
+    font-size: 8px;
+    color: var(--purple-neon);
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+/* Grade de Convidados */
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    width: 100%;
+}
+
+.slot {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    border: 2px solid var(--border-dim);
+    background: #080808;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.slot:hover {
+    border-color: #333;
+}
+
+/* Efeito quando ocupado ou falando */
+.slot.occupied {
+    border-color: #2a2a2a;
+}
+
+.slot.speaking {
+    border-color: var(--cyan-neon) !important;
+    box-shadow: 0 0 25px var(--cyan-neon);
+}
+
+.slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    animation: fadeIn 0.5s ease;
+}
+
+/* 5. ELEMENTOS DE CARREGAMENTO E UTILITÁRIOS */
+.loading-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background: var(--bg-dark); 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 9999; 
+}
+
+.loader { 
+    width: 40px; 
+    height: 40px; 
+    border: 3px solid #111; 
+    border-top: 3px solid var(--cyan-neon); 
+    border-radius: 50%; 
+    animation: spin 1s linear infinite; 
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .hidden { display: none !important; }
-.loading-overlay { position: fixed; inset: 0; background: var(--bg-dark); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-.loader { width: 40px; height: 40px; border: 4px solid #111; border-top: 4px solid var(--purple-neon); border-radius: 50%; animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 6. BOTÃO MIC CUSTOM */
+.btn-mic {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 2px solid var(--border-dim);
+    background: transparent;
+    color: #444;
+    cursor: pointer;
+    font-weight: 900;
+    font-size: 10px;
+    margin: 0 auto;
+    transition: 0.3s;
+}
+
+.btn-mic.active {
+    border-color: var(--cyan-neon);
+    color: var(--cyan-neon);
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+    background: rgba(0, 242, 255, 0.05);
+}
