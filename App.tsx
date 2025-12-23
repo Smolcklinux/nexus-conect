@@ -1,0 +1,1 @@
+// Gerenciador de Estado e Navegação

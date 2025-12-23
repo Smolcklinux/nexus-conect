@@ -3,161 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Conect | Voice Experience</title>
-    <link rel="stylesheet" href="./css/auth.css">
-    <link rel="stylesheet" href="./css/main.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Nexus Conect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .password-wrapper { position: relative; width: 100%; }
-        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--cyan-neon); cursor: pointer; font-size: 14px; opacity: 0.6; z-index: 10; }
-        .rank-owner { border: 3px solid #ffcc00 !important; box-shadow: 0 0 15px rgba(255, 204, 0, 0.5) !important; }
-        .rank-vip { border: 2px solid var(--cyan-neon) !important; box-shadow: 0 0 10px rgba(0, 242, 255, 0.4) !important; }
-        .rank-tag { position: absolute; bottom: -5px; background: #ffcc00; color: black; font-size: 7px; font-weight: 900; padding: 2px 5px; border-radius: 4px; text-transform: uppercase; pointer-events: none; }
-        .tag-vip { background: var(--cyan-neon); }
-        .profile-card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 20000; }
-        .profile-card { background: #0a0a0a; border: 1px solid var(--border-dim); width: 280px; border-radius: 24px; padding: 20px; text-align: center; position: relative; }
-        .profile-card .avatar-large { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cyan-neon); margin-bottom: 10px; }
-        .close-card { position: absolute; top: 15px; right: 15px; color: #444; cursor: pointer; font-size: 18px; }
-        .hidden { display: none !important; }
-        
-        /* Estilos da Nebulosa */
-        .nebula-container { position: relative; width: 100%; height: 100vh; overflow: hidden; background: radial-gradient(circle at center, #0a0a15 0%, #050505 100%); }
-        .user-bubble { position: absolute; width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--cyan-neon); cursor: pointer; transition: 0.3s; z-index: 10; }
-        .user-bubble img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
-        .nebula-nav { position: fixed; bottom: 30px; display: flex; gap: 10px; z-index: 100; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: white; margin: 0; overflow: hidden; }
+        .nebula-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: radial-gradient(circle at 50% 50%, #1a0b2e 0%, #050505 100%); overflow: hidden; }
+        .nebula-cloud { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; animation: move 20s infinite alternate; }
+        @keyframes move { from { transform: translate(-10%, -10%); } to { transform: translate(10%, 10%); } }
     </style>
 </head>
 <body>
-
-    <div id="loading-screen" class="loading-overlay">
-        <div class="loader"></div>
-        <p style="margin-top: 15px; font-size: 10px; letter-spacing: 2px;">NEXUS SYSTEM LOADING...</p>
-    </div>
-
-    <div id="profile-modal" class="profile-card-overlay hidden">
-        <div class="profile-card">
-            <span id="close-profile-btn" class="close-card">×</span>
-            <img src="" id="p-card-avatar" class="avatar-large" alt="Avatar">
-            <h3 id="p-card-nick">@username</h3>
-            <div id="p-card-rank" style="font-size: 9px; margin-bottom: 10px; font-weight: 900;">USER</div>
-            <p id="p-card-bio">Nenhuma bio definida.</p>
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button class="btn-outline-cyan" style="padding: 10px; font-size: 8px; flex: 1;">SEGUIR</button>
-                <button id="btn-open-chat" class="btn-outline-purple" style="padding: 10px; font-size: 8px; flex: 1;">CHAT</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="password-modal" class="loading-overlay hidden" style="background: rgba(0,0,0,0.9); z-index: 10001;">
-        <div class="glass-card" style="max-width: 320px;">
-            <h2 class="welcome-text">SALA PRIVADA</h2>
-            <div class="password-wrapper">
-                <input type="password" id="input-room-password" placeholder="SENHA DA SALA" class="nexus-input">
-                <button class="toggle-password" data-target="input-room-password">👁️</button>
-            </div>
-            <button id="btn-verify-password" class="btn-outline-cyan" style="margin-top: 15px;">ACESSAR</button>
-        </div>
-    </div>
-
-    <div id="age-section" class="auth-container">
-        <div class="glass-card">
-            <div class="nexus-logo-neon">N</div>
-            <h2 class="welcome-text">VERIFICAÇÃO</h2>
-            <p style="font-size: 14px; margin-bottom: 25px;">VOCÊ TEM 18 ANOS OU MAIS?</p>
-            <button id="btn-age-yes" class="btn-outline-cyan">SIM, EU TENHO</button>
-            <button onclick="window.close()" class="btn-outline-purple">NÃO</button>
-        </div>
-    </div>
-
-    <div id="auth-section" class="auth-container hidden">
-        <div class="glass-card">
-            <div class="nexus-logo-neon">N</div>
-            <div id="login-form">
-                <h2 class="welcome-text">LOGIN</h2>
-                <input type="email" id="login-email" placeholder="E-MAIL" class="nexus-input">
-                <div class="password-wrapper">
-                    <input type="password" id="login-password" placeholder="SENHA" class="nexus-input">
-                    <button class="toggle-password" data-target="login-password">👁️</button>
-                </div>
-                <button id="btn-login" class="btn-outline-cyan">ENTRAR</button>
-                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">
-                    NÃO TEM CONTA? <span id="go-to-register" style="color: var(--cyan-neon)">REGISTRE-SE</span>
-                </p>
-            </div>
-            <div id="register-form" class="hidden">
-                <h2 class="welcome-text">CADASTRO</h2>
-                <input type="text" id="reg-username" placeholder="NICKNAME (ID ÚNICO)" class="nexus-input">
-                <input type="email" id="reg-email" placeholder="E-MAIL" class="nexus-input">
-                <div class="password-wrapper">
-                    <input type="password" id="reg-password" placeholder="SENHA" class="nexus-input">
-                    <button class="toggle-password" data-target="reg-password">👁️</button>
-                </div>
-                <button id="btn-register" class="btn-outline-purple">CRIAR CONTA</button>
-                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">
-                    JÁ TEM CONTA? <span id="go-to-login" style="color: var(--purple-neon)">LOGIN</span>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div id="setup-section" class="auth-container hidden">
-        <div class="glass-card">
-            <h2 class="welcome-text">PERFIL</h2>
-            <div style="text-align: center;">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" id="main-avatar-preview" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cyan-neon); margin-bottom: 20px;">
-            </div>
-            <input type="text" id="setup-nickname" placeholder="@seu_nick" class="nexus-input">
-            <textarea id="setup-bio" placeholder="CONTE SOBRE VOCÊ..." class="nexus-input" style="height: 80px; resize: none;"></textarea>
-            <button id="btn-save-setup" class="btn-outline-cyan">SALVAR E ENTRAR</button>
-        </div>
-    </div>
-
-    <div id="home-nebula" class="auth-container hidden">
-        <div class="nebula-container">
-            <div id="online-users-container"></div>
-            <div class="nebula-nav">
-                <button id="btn-create-room-trigger" class="btn-outline-cyan" style="width: 140px; font-size: 9px;">CRIAR SALA</button>
-                <button id="btn-logout-main" class="btn-outline-purple" style="width: 100px; font-size: 9px;">LOGOUT</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="app-section" class="auth-container hidden">
-        <div class="glass-card stage-canvas">
-            <div class="stage-header">
-                <div class="room-id-badge">ID: <span id="display-room-id">---</span></div>
-                <div id="room-privacy-status" style="color: var(--purple-neon); font-weight: bold;">🔓 PÚBLICA</div>
-                <div id="room-count">0 ONLINE</div>
-            </div>
-
-            <div class="top-stage">
-                <div class="slot-node">
-                    <div class="slot" id="slot-0"></div>
-                    <span class="slot-label">ADMIN</span>
-                </div>
-            </div>
-
-            <div class="slots-grid">
-                <div class="slot-node"><div class="slot" id="slot-1"></div><span class="slot-label">01</span></div>
-                <div class="slot-node"><div class="slot" id="slot-2"></div><span class="slot-label">02</span></div>
-                <div class="slot-node"><div class="slot" id="slot-3"></div><span class="slot-label">03</span></div>
-                <div class="slot-node"><div class="slot" id="slot-4"></div><span class="slot-label">04</span></div>
-                <div class="slot-node"><div class="slot" id="slot-5"></div><span class="slot-label">05</span></div>
-                <div class="slot-node"><div class="slot" id="slot-6"></div><span class="slot-label">06</span></div>
-                <div class="slot-node"><div class="slot" id="slot-7"></div><span class="slot-label">07</span></div>
-                <div class="slot-node"><div class="slot" id="slot-8"></div><span class="slot-label">08</span></div>
-            </div>
-
-            <div class="stage-controls">
-                <button id="btn-mic-toggle" class="btn-mic">MIC</button>
-                <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
-                    <button id="btn-share" class="btn-outline-cyan" style="flex: 1; font-size: 10px;">CONVIDAR</button>
-                    <button id="btn-leave-room" class="btn-outline-purple" style="flex: 1; font-size: 10px;">VOLTAR</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script type="module" src="./js/main.js"></script>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
 </body>
 </html>

@@ -1,0 +1,1 @@
+// Código completo e funcional do VoiceRoom atualizado com as novas configurações de Dono, modo gaming e tags de moderação.
