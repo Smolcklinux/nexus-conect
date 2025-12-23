@@ -7,6 +7,8 @@
     --nexus-primary: #6200ea;
     --nexus-accent: #00f2ff;
     --border-glass: rgba(255, 255, 255, 0.08);
+    --cyan-neon: #00f2ff;
+    --purple-neon: #bc00ff;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,6 +19,39 @@ body {
     font-family: 'Inter', sans-serif;
     height: 100vh;
     overflow: hidden;
+}
+
+/* --- NEBULOSA (ADICIONADO) --- */
+.nebula-background {
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, #1a0b2e 0%, #050505 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.user-bubble {
+    position: absolute;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    padding: 2px;
+    background: linear-gradient(45deg, var(--cyan-neon), var(--purple-neon));
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: float-nebula 8s infinite ease-in-out;
+}
+
+.user-bubble img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid #000;
+}
+
+@keyframes float-nebula {
+    0%, 100% { transform: translate(0, 0); }
+    50% { transform: translate(10px, -20px); }
 }
 
 /* --- SPLASH SCREEN --- */
