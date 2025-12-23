@@ -5,102 +5,71 @@ const CONFIG = {
     SQUAD_ID: "9520961a-3a93-4e15-9095-00fd09a377b1"
 };
 
-// Inicialização Supabase
-window.supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-window.vapiInstance = null;
+const supabase = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
+let vapi = null;
 
-// Resolve o erro de carregamento da Vapi
-function initVapi() {
-    if (typeof Vapi !== 'undefined') {
-        window.vapiInstance = new Vapi(CONFIG.VAPI_KEY);
-        setupVapiEvents();
-    } else {
-        setTimeout(initVapi, 500);
-    }
-}
-initVapi();
-
-let currentLang = 'pt';
-
-async function handleAction() {
-    const btn = document.getElementById('btn-action');
-    if (!window.vapiInstance) return alert("Sistema carregando...");
-
-    if (!window.vapiInstance.isCallActive()) {
-        try {
-            await window.vapiInstance.start(CONFIG.SQUAD_ID);
-            btn.innerText = translations[currentLang].leave;
-            btn.style.background = "#ff4b2b";
-        } catch (e) { alert("Erro ao acessar microfone."); }
-    } else {
-        window.vapiInstance.stop();
-        btn.innerText = translations[currentLang].join;
-        btn.style.background = "";
-    }
+// --- NAVEGAÇÃO ---
+function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+    document.getElementById(screenId).classList.remove('hidden');
 }
 
-function setupVapiEvents() {
-    window.vapiInstance.on('volume-level', (v) => {
-        const el = document.getElementById('local-user');
-        if (el) { // Proteção contra erro classList
-            v > 0.05 ? el.classList.add('speaking') : el.classList.remove('speaking');
-        }
-    });
+// --- PERFIL ---
+async function saveProfile() {
+    const { data: { user } } = await supabase.auth.getUser();
+    const updates = {
+        id: user.id,
+        username: document.getElementById('profile-name').value,
+        bio: document.getElementById('profile-bio').value,
+        updated_at: new Date()
+    };
+    await supabase.from('profiles').upsert(updates);
+    alert("Perfil atualizado!");
 }
 
-// Chat em Tempo Real
-async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    if (!input.value.trim()) return;
-
-    const { data: { user } } = await window.supabaseClient.auth.getUser();
-    await window.supabaseClient.from('messages').insert([
-        { content: input.value, user_id: user.id, user_name: user.email.split('@')[0] }
-    ]);
-    input.value = "";
-}
-
-window.supabaseClient
-    .channel('public:messages')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, p => {
-        const container = document.getElementById('chat-messages');
-        const div = document.createElement('div');
-        div.className = 'msg-bubble';
-        div.innerHTML = `<b>${p.new.user_name}:</b> ${p.new.content}`;
-        container.appendChild(div);
-        container.scrollTop = container.scrollHeight;
-    }).subscribe();
-
-// Presença e Usuários Online
-const roomChannel = window.supabaseClient.channel('nexus_room', { config: { presence: { key: 'user' } } });
-
-roomChannel.on('presence', { event: 'sync' }, () => {
-    const state = roomChannel.presenceState();
-    const grid = document.querySelector('.avatar-grid');
-    grid.querySelectorAll('.avatar-wrapper:not(#local-user)').forEach(el => el.remove());
+async function uploadAvatar() {
+    const file = document.getElementById('avatar-file').files[0];
+    const { data: { user } } = await supabase.auth.getUser();
+    const filePath = `avatars/${user.id}`;
     
-    const myId = window.supabaseClient.auth.user()?.id;
-    Object.values(state).forEach(pres => pres.forEach(u => {
-        if (u.id !== myId) {
-            const div = document.createElement('div');
-            div.className = 'avatar-wrapper';
-            div.innerHTML = `<img src="${u.avatar}"><div class="glow-ring"></div>`;
-            grid.appendChild(div);
-        }
-    }));
-}).subscribe(async (s) => {
-    if (s === 'SUBSCRIBED') {
-        const { data: { user } } = await window.supabaseClient.auth.getUser();
-        const el = document.getElementById('local-user');
-        const isVip = el ? el.classList.contains('is-vip') : false; // Correção aqui!
-        await roomChannel.track({ id: user.id, avatar: document.getElementById('user-img').src, is_vip: isVip });
-    }
-});
+    await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+    document.getElementById('profile-img-preview').src = publicUrl;
+}
 
-function updateLanguage(lang) {
-    currentLang = lang;
-    const btn = document.getElementById('btn-action');
-    if (window.vapiInstance) {
-        btn.innerText = window.vapiInstance.isCallActive() ? translations[lang].leave : translations[lang].join;
+// --- VOZ (VAPI) ---
+function initVapi() {
+    if (typeof Vapi !== 'undefined' && !vapi) {
+        vapi = new Vapi(CONFIG.VAPI_KEY);
+        vapi.on('volume-level', (v) => {
+            const el = document.querySelector('.speaking-indicator');
+            if (el) el.style.opacity = v > 0.05 ? "1" : "0";
+        });
     }
+}
+
+async function toggleVoice() {
+    initVapi();
+    const btn = document.getElementById('btn-mic');
+    if (!vapi.isCallActive()) {
+        await vapi.start(CONFIG.SQUAD_ID);
+        btn.innerText = "🔇 Desligar";
+        btn.classList.add('active');
+    } else {
+        vapi.stop();
+        btn.innerText = "🎙️ Entrar na Voz";
+        btn.classList.remove('active');
+    }
+}
+
+// --- SALA ---
+function joinRoom(name) {
+    document.getElementById('current-room-name').innerText = name;
+    showScreen('screen-room');
+    // Aqui iniciaria o Presence do Supabase para ver outros usuários online
+}
+
+function leaveRoom() {
+    if (vapi) vapi.stop();
+    showScreen('screen-home');
 }

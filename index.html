@@ -3,61 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Conect</title>
+    <title>Nexus Conect | Social Voice</title>
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/bundle.js"></script>
 </head>
 <body>
     <div id="app">
-        <div id="auth-screen" class="screen">
-            <div class="auth-box">
-                <h1>Nexus Conect</h1>
-                <input type="email" id="email" placeholder="E-mail">
-                <input type="password" id="password" placeholder="Senha">
-                <div class="auth-buttons">
-                    <button onclick="handleLogin()">Entrar</button>
-                    <button onclick="handleSignUp()" class="secondary">Registar</button>
+        <section id="screen-auth" class="screen">
+            <div class="auth-card">
+                <h1>Nexus</h1>
+                <input type="email" id="login-email" placeholder="E-mail">
+                <input type="password" id="login-pass" placeholder="Senha">
+                <button onclick="authAction('login')">Entrar</button>
+                <button onclick="authAction('signup')" class="btn-flat">Criar Conta</button>
+            </div>
+        </section>
+
+        <section id="screen-home" class="screen hidden">
+            <nav class="top-nav">
+                <span>Explorar</span>
+                <div class="nav-icons">
+                    <button onclick="showScreen('screen-profile')" class="btn-icon">👤</button>
+                </div>
+            </nav>
+            <div class="rooms-list">
+                <div class="room-card" onclick="joinRoom('Global Lounge')">
+                    <h3>🌍 Global Lounge</h3>
+                    <p>Conversas aleatórias e música</p>
+                    <span class="badge">Ativa</span>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <div id="main-screen" class="screen hidden">
-            <header>
-                <h2>Nexus Room</h2>
-                <select id="lang-select" onchange="updateLanguage(this.value)">
-                    <option value="pt">PT</option>
-                    <option value="en">EN</option>
-                </select>
+        <section id="screen-profile" class="screen hidden">
+            <header class="sub-header">
+                <button onclick="showScreen('screen-home')">← Voltar</button>
+                <h2>Meu Perfil</h2>
             </header>
-
-            <main class="room-container">
-                <div class="avatar-grid">
-                    <div class="avatar-wrapper" id="local-user">
-                        <div class="glow-ring"></div>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" id="user-img">
-                        <span id="vip-tag" class="hidden">VIP</span>
-                    </div>
+            <div class="profile-editor">
+                <div class="avatar-upload">
+                    <img src="" id="profile-img-preview">
+                    <input type="file" id="avatar-file" onchange="uploadAvatar()">
                 </div>
+                <input type="text" id="profile-name" placeholder="Seu Nome">
+                <textarea id="profile-bio" placeholder="Sua biografia..."></textarea>
+                <button onclick="saveProfile()" class="btn-save">Salvar Alterações</button>
+                <button onclick="logout()" class="btn-danger">Sair da Conta</button>
+            </div>
+        </section>
 
-                <div class="chat-area">
-                    <div id="chat-messages"></div>
-                    <div class="chat-input-row">
-                        <input type="text" id="chat-input" placeholder="Mensagem...">
-                        <button onclick="sendMessage()">➤</button>
-                    </div>
+        <section id="screen-room" class="screen hidden">
+            <header class="room-header">
+                <button onclick="leaveRoom()">✕ Sair</button>
+                <h2 id="current-room-name">Sala</h2>
+            </header>
+            <div class="voice-grid" id="participants-grid">
                 </div>
-            </main>
-
-            <footer>
-                <button id="btn-action" onclick="handleAction()">Entrar na Voz</button>
+            <div class="chat-container">
+                <div id="chat-feed"></div>
+                <div class="chat-input">
+                    <input type="text" id="msg-input" placeholder="Diga algo...">
+                    <button onclick="sendChatMessage()">➤</button>
+                </div>
+            </div>
+            <footer class="voice-controls">
+                <button id="btn-mic" onclick="toggleVoice()">🎙️ Entrar na Voz</button>
             </footer>
-        </div>
+        </section>
     </div>
 
-    <script src="translations.js"></script>
     <script src="main.js"></script>
-    <script src="auth.js"></script>
 </body>
 </html>
