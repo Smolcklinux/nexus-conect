@@ -3,66 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Conect | Conexão Direta</title>
+    <title>Nexus Conect | Login</title>
     
     <link rel="stylesheet" href="./css/main.css">
     <link rel="stylesheet" href="./css/auth.css">
-    <link rel="stylesheet" href="./css/components.css">
-    <link rel="stylesheet" href="./css/chat.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body>
+<body class="nexus-theme">
 
     <div id="loading-screen">
         <div class="loader"></div>
-        <p>Acessando Nexus...</p>
     </div>
 
-    <div id="auth-section" class="hidden">
-        <div class="auth-container">
-            <div class="ban-card">
+    <div id="auth-section" class="auth-wrapper hidden">
+        <div class="auth-card">
+            <div class="logo-container">
+                <img src="logo.png" alt="Nexus Logo" class="nexus-logo">
                 <h1 id="auth-title">Entrar no Nexus</h1>
-                
-                <div id="login-form">
-                    <input type="email" id="login-email" placeholder="E-mail" class="auth-input">
-                    <input type="password" id="login-password" placeholder="Senha" class="auth-input">
-                    <button id="btn-login" class="btn-recorrer">ACESSAR</button>
-                    <p style="margin-top:15px; cursor:pointer" onclick="toggleAuth()">
-                        Novo por aqui? <span style="color:var(--nexus-accent)">Criar conta</span>
-                    </p>
+            </div>
+            
+            <div id="login-form">
+                <div class="input-group">
+                    <input type="email" id="login-email" placeholder="E-mail" class="nexus-input">
                 </div>
+                <div class="input-group">
+                    <input type="password" id="login-password" placeholder="Senha" class="nexus-input">
+                </div>
+                <button id="btn-login" class="nexus-btn-primary">ACESSAR SISTEMA</button>
+                <p class="auth-switch">Não tem conta? <span onclick="toggleAuth()">Cadastre-se</span></p>
+            </div>
 
-                <div id="register-form" class="hidden">
-                    <input type="text" id="reg-username" placeholder="Usuário" class="auth-input">
-                    <input type="email" id="reg-email" placeholder="E-mail" class="auth-input">
-                    <input type="password" id="reg-password" placeholder="Senha" class="auth-input">
-                    <button id="btn-register" class="btn-recorrer">CADASTRAR</button>
-                    <p style="margin-top:15px; cursor:pointer" onclick="toggleAuth()">
-                        Já tem conta? <span style="color:var(--nexus-accent)">Entrar</span>
-                    </p>
+            <div id="register-form" class="hidden">
+                <div class="input-group">
+                    <input type="text" id="reg-username" placeholder="Nome de Usuário" class="nexus-input">
                 </div>
+                <div class="input-group">
+                    <input type="email" id="reg-email" placeholder="E-mail" class="nexus-input">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="reg-password" placeholder="Senha" class="nexus-input">
+                </div>
+                <button id="btn-register" class="nexus-btn-primary">CRIAR CONTA</button>
+                <p class="auth-switch">Já tem conta? <span onclick="toggleAuth()">Fazer Login</span></p>
             </div>
         </div>
     </div>
 
-    <div id="app-section" class="hidden">
-        <div class="chat-wrapper">
-            <div class="side-panel">
-                <div class="header" style="padding:20px;"><h3>Nexus Chat</h3></div>
-                <div id="friends-list" class="friends-list"></div>
-                <button id="btn-logout" class="btn-sair" style="margin:10px;">Sair</button>
-            </div>
-            <div class="main-chat">
-                <div id="messages-container" class="messages-container"></div>
-                <div class="input-area">
-                    <input type="text" id="chat-input" placeholder="Mensagem..." class="chat-input">
-                    <button id="btn-send" class="btn-primary">Enviar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script type="module" src="./js/main.js"></script>
+    <script type="module" src="./main.js"></script>
 </body>
 </html>
