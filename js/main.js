@@ -5,95 +5,118 @@ const ui = {
     auth: document.getElementById('auth-section'),
     app: document.getElementById('app-section'),
     loginForm: document.getElementById('login-form'),
-    registerForm: document.getElementById('register-form'),
-    authTitle: document.getElementById('auth-title')
+    registerForm: document.getElementById('register-form')
 };
 
-// Função de Inicialização
+/**
+ * INICIALIZAÇÃO DO APP
+ */
 async function initApp() {
-    console.log("Nexus: Motor iniciado.");
+    console.log("🟢 Nexus: Motor iniciado.");
 
     try {
-        // Verifica se há uma sessão ativa usando o cliente renomeado
         const { data: { session }, error } = await nexusClient.auth.getSession();
-
         if (error) throw error;
 
-        // Remove a tela de carregamento
-        if (ui.loading) ui.loading.classList.add('hidden');
-
         if (session) {
-            console.log("Nexus: Usuário detectado.");
-            ui.app.classList.remove('hidden');
-            ui.auth.classList.add('hidden');
+            // VERIFICAÇÃO DE BANIMENTO (Baseado no seu SQL)
+            const { data: profile, error: profileErr } = await nexusClient
+                .from('profiles')
+                .select('banned_until, ban_reason')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profile && profile.banned_until && new Date(profile.banned_until) > new Date()) {
+                alert(`🚫 ACESSO NEGADO\nMotivo: ${profile.ban_reason || 'Violação dos termos'}\nAté: ${new Date(profile.banned_until).toLocaleString()}`);
+                await nexusClient.auth.signOut();
+                location.reload();
+                return;
+            }
+
+            console.log("✅ Nexus: Usuário Autenticado.");
+            ui.app?.classList.remove('hidden');
+            ui.auth?.classList.add('hidden');
         } else {
-            console.log("Nexus: Nenhum usuário logado.");
-            ui.auth.classList.remove('hidden');
-            ui.app.classList.add('hidden');
+            ui.auth?.classList.remove('hidden');
+            ui.app?.classList.add('hidden');
         }
     } catch (err) {
-        console.error("Erro na inicialização Nexus:", err.message);
+        console.error("❌ Erro Nexus:", err.message);
+        ui.auth?.classList.remove('hidden');
+    } finally {
         if (ui.loading) ui.loading.classList.add('hidden');
-        ui.auth.classList.remove('hidden');
     }
 }
 
-// Lógica de Login
+/**
+ * LÓGICA DE LOGIN
+ */
 document.getElementById('btn-login')?.addEventListener('click', async () => {
-    const email = document.getElementById('login-email').value;
-    const pass = document.getElementById('login-password').value;
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-password').value.trim();
+
+    if (!email || !pass) return alert("Preencha todos os campos!");
 
     const { error } = await nexusClient.auth.signInWithPassword({ email, password: pass });
     
-    if (error) {
-        alert("Erro no acesso: " + error.message);
-    } else {
-        location.reload();
-    }
+    if (error) alert("Erro no acesso: " + error.message);
+    else location.reload();
 });
 
-// Lógica de Cadastro
+/**
+ * LÓGICA DE CADASTRO (Cria perfil via Trigger SQL)
+ */
 document.getElementById('btn-register')?.addEventListener('click', async () => {
-    const email = document.getElementById('reg-email').value;
-    const pass = document.getElementById('reg-password').value;
-    const user = document.getElementById('reg-username').value;
+    const email = document.getElementById('reg-email').value.trim();
+    const pass = document.getElementById('reg-password').value.trim();
+    const user = document.getElementById('reg-username').value.trim();
+
+    if (!email || !pass || !user) return alert("Preencha todos os campos!");
+
+    // Tenta obter o IP para o seu log de segurança do SQL
+    let userIp = "0.0.0.0";
+    try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        userIp = data.ip;
+    } catch(e) { console.log("Não foi possível obter o IP"); }
 
     const { error } = await nexusClient.auth.signUp({ 
         email, 
         password: pass,
-        options: { data: { display_name: user } }
+        options: { 
+            data: { 
+                display_name: user,
+                registration_ip: userIp 
+            } 
+        }
     });
 
     if (error) {
         alert("Erro no cadastro: " + error.message);
     } else {
-        alert("Conta criada com sucesso! Verifique seu e-mail.");
+        alert("🎉 Conta criada no Nexus! Verifique seu e-mail para ativar.");
         window.toggleAuth();
     }
 });
 
-// Lógica de Logout
+/**
+ * LOGOUT
+ */
 document.getElementById('btn-logout')?.addEventListener('click', async () => {
     await nexusClient.auth.signOut();
     location.reload();
 });
 
-// Alternar entre Login e Cadastro
+/**
+ * ALTERNAR TELAS (Toggle)
+ */
 window.toggleAuth = () => {
-    const isLoginVisible = !ui.loginForm.classList.contains('hidden');
-    
-    if (isLoginVisible) {
-        ui.loginForm.classList.add('hidden');
-        ui.registerForm.classList.remove('hidden');
-        ui.authTitle.innerText = "Criar Conta Nexus";
-    } else {
-        ui.loginForm.classList.remove('hidden');
-        ui.registerForm.classList.add('hidden');
-        ui.authTitle.innerText = "Entrar no Nexus";
-    }
+    ui.loginForm?.classList.toggle('hidden');
+    ui.registerForm?.classList.toggle('hidden');
 };
 
-// Dispara a inicialização quando o DOM estiver pronto
+// Iniciar
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initApp);
 } else {
