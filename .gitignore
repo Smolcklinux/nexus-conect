@@ -1,0 +1,15 @@
+# Dependências
+/node_modules
+/.pnp
+.pnp.js
+
+# Next.js build
+/.next/
+/out/
+
+# Variáveis locais (Mantenha isso aqui para segurança!)
+.env*.local
+.env
+
+# Outros
+.DS_Store
