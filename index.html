@@ -18,6 +18,7 @@
         .profile-card { background: #0a0a0a; border: 1px solid var(--border-dim); width: 280px; border-radius: 24px; padding: 20px; text-align: center; position: relative; }
         .profile-card .avatar-large { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cyan-neon); margin-bottom: 10px; }
         .close-card { position: absolute; top: 15px; right: 15px; color: #444; cursor: pointer; font-size: 18px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -30,11 +31,11 @@
     <div id="profile-modal" class="profile-card-overlay hidden">
         <div class="profile-card">
             <span id="close-profile-btn" class="close-card">×</span>
-            <img src="" id="p-card-avatar" class="avatar-large">
+            <img src="" id="p-card-avatar" class="avatar-large" alt="Avatar">
             <h3 id="p-card-nick">@username</h3>
             <div id="p-card-rank" style="font-size: 9px; margin-bottom: 10px; font-weight: 900;">USER</div>
             <p id="p-card-bio">Nenhuma bio definida.</p>
-            <button class="btn-outline-cyan" style="padding: 10px; font-size: 9px;">SEGUIR</button>
+            <button class="btn-outline-cyan" style="padding: 10px; font-size: 9px; width: 100%;">SEGUIR</button>
         </div>
     </div>
 
@@ -42,10 +43,10 @@
         <div class="glass-card" style="max-width: 320px;">
             <h2 class="welcome-text">SALA PRIVADA</h2>
             <div class="password-wrapper">
-                <input type="password" id="input-room-password" placeholder="SENHA" class="nexus-input">
+                <input type="password" id="input-room-password" placeholder="SENHA DA SALA" class="nexus-input">
                 <button class="toggle-password" data-target="input-room-password">👁️</button>
             </div>
-            <button id="btn-verify-password" class="btn-outline-cyan">ACESSAR</button>
+            <button id="btn-verify-password" class="btn-outline-cyan" style="margin-top: 15px;">ACESSAR</button>
         </div>
     </div>
 
@@ -71,19 +72,23 @@
                     <button class="toggle-password" data-target="login-password">👁️</button>
                 </div>
                 <button id="btn-login" class="btn-outline-cyan">ENTRAR</button>
-                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">NÃO TEM CONTA? <span id="go-to-register" style="color: var(--cyan-neon)">REGISTRE-SE</span></p>
+                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">
+                    NÃO TEM CONTA? <span id="go-to-register" style="color: var(--cyan-neon)">REGISTRE-SE</span>
+                </p>
             </div>
 
             <div id="register-form" class="hidden">
                 <h2 class="welcome-text">CADASTRO</h2>
-                <input type="text" id="reg-username" placeholder="NOME" class="nexus-input">
+                <input type="text" id="reg-username" placeholder="NICKNAME (ID ÚNICO)" class="nexus-input">
                 <input type="email" id="reg-email" placeholder="E-MAIL" class="nexus-input">
                 <div class="password-wrapper">
                     <input type="password" id="reg-password" placeholder="SENHA" class="nexus-input">
                     <button class="toggle-password" data-target="reg-password">👁️</button>
                 </div>
                 <button id="btn-register" class="btn-outline-purple">CRIAR CONTA</button>
-                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">JÁ TEM CONTA? <span id="go-to-login" style="color: var(--purple-neon)">LOGIN</span></p>
+                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">
+                    JÁ TEM CONTA? <span id="go-to-login" style="color: var(--purple-neon)">LOGIN</span>
+                </p>
             </div>
         </div>
     </div>
@@ -91,9 +96,11 @@
     <div id="setup-section" class="auth-container hidden">
         <div class="glass-card">
             <h2 class="welcome-text">PERFIL</h2>
-            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" id="main-avatar-preview" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cyan-neon); margin-bottom: 20px;">
+            <div style="text-align: center;">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" id="main-avatar-preview" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cyan-neon); margin-bottom: 20px;">
+            </div>
             <input type="text" id="setup-nickname" placeholder="@seu_nick" class="nexus-input">
-            <textarea id="setup-bio" placeholder="SUA BIO..." class="nexus-input" style="height: 80px;"></textarea>
+            <textarea id="setup-bio" placeholder="CONTE SOBRE VOCÊ..." class="nexus-input" style="height: 80px; resize: none;"></textarea>
             <button id="btn-save-setup" class="btn-outline-cyan">SALVAR E ENTRAR</button>
         </div>
     </div>
@@ -105,9 +112,14 @@
                 <div id="room-privacy-status" style="color: var(--purple-neon); font-weight: bold;">🔓 PÚBLICA</div>
                 <div id="room-count">0 ONLINE</div>
             </div>
+
             <div class="top-stage">
-                <div class="slot-node"><div class="slot" id="slot-0"></div><span class="slot-label">ADMIN</span></div>
+                <div class="slot-node">
+                    <div class="slot" id="slot-0"></div>
+                    <span class="slot-label">ADMIN</span>
+                </div>
             </div>
+
             <div class="slots-grid">
                 <div class="slot-node"><div class="slot" id="slot-1"></div><span class="slot-label">01</span></div>
                 <div class="slot-node"><div class="slot" id="slot-2"></div><span class="slot-label">02</span></div>
@@ -118,12 +130,14 @@
                 <div class="slot-node"><div class="slot" id="slot-7"></div><span class="slot-label">07</span></div>
                 <div class="slot-node"><div class="slot" id="slot-8"></div><span class="slot-label">08</span></div>
             </div>
+
             <div class="stage-controls">
                 <button id="btn-mic-toggle" class="btn-mic">MIC</button>
-                <div style="display: flex; gap: 10px; width: 100%;">
+                <div style="display: flex; gap: 10px; width: 100%; margin-top: 10px;">
                     <button id="btn-share" class="btn-outline-cyan" style="flex: 1; font-size: 10px;">CONVIDAR</button>
                     <button id="btn-admin-lock" class="btn-outline-purple hidden" style="flex: 1; font-size: 10px;">TRANCAR</button>
                 </div>
+                <button id="btn-logout" class="btn-outline-purple" style="width: 100%; margin-top: 10px; font-size: 9px; opacity: 0.7;">SAIR DA CONTA</button>
             </div>
         </div>
     </div>

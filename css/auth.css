@@ -8,7 +8,6 @@
     --border-dim: #1a1a1a;
 }
 
-/* 1. RESET E BASE */
 body { 
     background: var(--bg-dark); 
     margin: 0; 
@@ -30,7 +29,6 @@ body {
     background: radial-gradient(circle at center, #0a0a15 0%, #050505 100%); 
 }
 
-/* 2. CARD GLASSMORPHISM */
 .glass-card {
     background: var(--glass);
     width: 100%;
@@ -54,7 +52,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* 3. INPUTS E BOTÕES */
 .nexus-input {
     width: 100%; 
     background: #0d0d0d; 
@@ -66,7 +63,6 @@ body {
     box-sizing: border-box; 
     outline: none; 
     transition: 0.3s;
-    font-family: 'Inter', sans-serif;
 }
 
 .nexus-input:focus { 
@@ -82,7 +78,7 @@ body {
     font-weight: 800;
     cursor: pointer; 
     margin-bottom: 12px; 
-    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    transition: 0.4s; 
     text-transform: uppercase; 
     letter-spacing: 2px;
     font-size: 11px;
@@ -91,131 +87,91 @@ body {
 .btn-outline-cyan { border: 2px solid var(--cyan-neon); color: var(--cyan-neon); }
 .btn-outline-purple { border: 2px solid var(--purple-neon); color: var(--purple-neon); }
 
-.btn-outline-cyan:hover { 
-    background: var(--cyan-neon); 
-    color: #000; 
-    box-shadow: 0 0 30px var(--cyan-neon); 
-}
+.btn-outline-cyan:hover { background: var(--cyan-neon); color: #000; box-shadow: 0 0 30px var(--cyan-neon); }
 
-/* 4. LAYOUT DO STAGE (CADEIRAS) */
-.stage-canvas {
-    border: 1px solid rgba(188, 0, 255, 0.3); /* Borda levemente roxa */
-}
-
-.top-stage {
-    margin: 20px 0 35px 0;
-    display: flex;
-    justify-content: center;
-    width: 100%;
-}
-
-/* O Trono do Admin */
-.owner-slot {
-    width: 95px !important;
-    height: 95px !important;
-    border: 3px solid var(--purple-neon) !important;
-    box-shadow: 0 0 20px rgba(188, 0, 255, 0.3);
-    position: relative;
-}
-
-.owner-slot::after {
-    content: 'ADMIN';
-    position: absolute;
-    bottom: -20px;
-    font-size: 8px;
-    color: var(--purple-neon);
-    font-weight: 900;
-    letter-spacing: 2px;
-}
-
-/* Grade de Convidados */
+/* --- STAGE & SLOTS --- */
 .slots-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     width: 100%;
+    margin-top: 20px;
+}
+
+.slot-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .slot {
-    width: 68px;
-    height: 68px;
+    width: 65px;
+    height: 65px;
     border-radius: 50%;
     border: 2px solid var(--border-dim);
     background: #080808;
     cursor: pointer;
-    overflow: hidden;
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
-    position: relative;
-}
-
-.slot:hover {
-    border-color: #333;
-}
-
-/* Efeito quando ocupado ou falando */
-.slot.occupied {
-    border-color: #2a2a2a;
-}
-
-.slot.speaking {
-    border-color: var(--cyan-neon) !important;
-    box-shadow: 0 0 25px var(--cyan-neon);
+    transition: 0.3s;
 }
 
 .slot img {
     width: 100%;
     height: 100%;
+    border-radius: 50%;
     object-fit: cover;
-    animation: fadeIn 0.5s ease;
 }
 
-/* 5. ELEMENTOS DE CARREGAMENTO E UTILITÁRIOS */
-.loading-overlay { 
-    position: fixed; 
-    inset: 0; 
-    background: var(--bg-dark); 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    justify-content: center; 
-    z-index: 9999; 
+/* Ranks */
+.rank-owner { border-color: #ffcc00 !important; box-shadow: 0 0 15px rgba(255, 204, 0, 0.3); }
+.rank-vip { border-color: var(--cyan-neon) !important; }
+
+.rank-tag {
+    position: absolute;
+    bottom: -5px;
+    background: #ffcc00;
+    color: #000;
+    font-size: 7px;
+    font-weight: 900;
+    padding: 2px 5px;
+    border-radius: 4px;
+    text-transform: uppercase;
 }
 
-.loader { 
-    width: 40px; 
-    height: 40px; 
-    border: 3px solid #111; 
-    border-top: 3px solid var(--cyan-neon); 
-    border-radius: 50%; 
-    animation: spin 1s linear infinite; 
+/* Animação falando */
+.speaking {
+    border-color: var(--cyan-neon) !important;
+    animation: glow-pulse 1.5s infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes glow-pulse {
+    0% { box-shadow: 0 0 5px var(--cyan-neon); }
+    50% { box-shadow: 0 0 20px var(--cyan-neon); }
+    100% { box-shadow: 0 0 5px var(--cyan-neon); }
+}
 
-.hidden { display: none !important; }
+.slot-label { font-size: 8px; margin-top: 5px; color: #555; font-weight: 700; }
 
-/* 6. BOTÃO MIC CUSTOM */
 .btn-mic {
-    width: 70px;
-    height: 70px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     border: 2px solid var(--border-dim);
     background: transparent;
     color: #444;
     cursor: pointer;
     font-weight: 900;
-    font-size: 10px;
-    margin: 0 auto;
     transition: 0.3s;
+    margin-top: 20px;
 }
 
 .btn-mic.active {
     border-color: var(--cyan-neon);
     color: var(--cyan-neon);
-    box-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
-    background: rgba(0, 242, 255, 0.05);
+    box-shadow: 0 0 20px rgba(0, 242, 255, 0.2);
 }
+
+.hidden { display: none !important; }
