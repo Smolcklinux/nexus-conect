@@ -5,52 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Conect</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web@1.0.1/dist/bundle.js"></script>
 </head>
 <body>
     <div id="app">
         <div id="auth-screen" class="screen">
             <div class="auth-box">
                 <h1>Nexus Conect</h1>
-                <p>Conecte-se com o mundo</p>
                 <input type="email" id="email" placeholder="E-mail">
                 <input type="password" id="password" placeholder="Senha">
                 <div class="auth-buttons">
-                    <button onclick="handleLogin()" id="btn-login">Entrar</button>
-                    <button onclick="handleSignUp()" id="btn-signup" class="secondary">Registar</button>
+                    <button onclick="handleLogin()">Entrar</button>
+                    <button onclick="handleSignUp()" class="secondary">Registar</button>
                 </div>
             </div>
         </div>
 
         <div id="main-screen" class="screen hidden">
             <header>
-                <div class="logo-area">
-                    <span class="online-dot"></span>
-                    <h2 id="txt-logo">Nexus Conect</h2>
-                </div>
+                <h2>Nexus Room</h2>
                 <select id="lang-select" onchange="updateLanguage(this.value)">
-                    <option value="pt">Português</option>
-                    <option value="en">English</option>
-                    <option value="es">Español</option>
+                    <option value="pt">PT</option>
+                    <option value="en">EN</option>
                 </select>
             </header>
 
-            <main class="room-container">
+            <main>
                 <div class="avatar-grid">
                     <div class="avatar-wrapper" id="local-user">
                         <div class="glow-ring"></div>
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" id="user-img" onclick="triggerFileUpload()">
-                        <span id="vip-tag" class="hidden">VIP</span>
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user" id="user-img">
                     </div>
                 </div>
-                <input type="file" id="file-input" class="hidden" accept="image/*" onchange="uploadPhoto(this)">
 
                 <div class="chat-area">
                     <div id="chat-messages"></div>
                     <div class="chat-input-row">
-                        <input type="text" id="chat-input" placeholder="Escreva uma mensagem...">
-                        <button onclick="sendMessage()">Enviar</button>
+                        <input type="text" id="chat-input" placeholder="Mensagem...">
+                        <button onclick="sendMessage()">➤</button>
                     </div>
                 </div>
             </main>
