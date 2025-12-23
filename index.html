@@ -5,10 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Conect | Conexão Segura</title>
     
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="stylesheet" href="css/auth.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/chat.css">
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; 
+                   script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://wudbjohhxzqqxxwhoche.supabase.co; 
+                   connect-src 'self' https://wudbjohhxzqqxxwhoche.supabase.co https://api.ipify.org; 
+                   img-src 'self' data: https://wudbjohhxzqqxxwhoche.supabase.co; 
+                   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;">
+
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/auth.css">
+    <link rel="stylesheet" href="./css/components.css">
+    <link rel="stylesheet" href="./css/chat.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -16,12 +23,13 @@
 
     <div id="loading-screen">
         <div class="loader"></div>
-        <p>Iniciando Nexus...</p>
+        <p id="loading-status">Verificando segurança...</p>
     </div>
 
     <div id="auth-section" class="hidden">
         <div class="auth-container">
-            <div class="ban-card"> <h1 id="auth-title">Entrar no Nexus</h1>
+            <div class="ban-card">
+                <h1 id="auth-title">Entrar no Nexus</h1>
                 
                 <div id="login-form">
                     <input type="email" id="login-email" placeholder="E-mail" class="auth-input">
@@ -52,7 +60,7 @@
                     <h3>Amigos</h3>
                 </div>
                 <div id="friends-list" class="friends-list"></div>
-                <button onclick="handleLogout()" class="btn-sair" style="margin:10px;">Sair</button>
+                <button id="btn-logout" class="btn-sair" style="margin:10px;">Sair</button>
             </div>
             
             <div class="main-chat">
@@ -68,6 +76,7 @@
         </div>
     </div>
 
-    <script type="module" src="js/main.js"></script>
+    <script type="module" src="./js/config.js"></script>
+    <script type="module" src="./js/main.js"></script>
 </body>
 </html>
