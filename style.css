@@ -1,35 +1,23 @@
-:root {
-    --primary: #6a11cb;
-    --vip-gold: #ffd700;
-    --bg: #0f0c29;
-}
-
-body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; }
+:root { --primary: #6a11cb; --vip: #ffd700; --bg: #0f0c29; }
+body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
 .hidden { display: none !important; }
+.screen { width: 100%; height: 100vh; display: flex; flex-direction: column; }
 
-/* Auth Styling */
-.auth-container { display: flex; flex-direction: column; padding: 50px 20px; align-items: center; }
-input { width: 80%; padding: 12px; margin: 10px; border-radius: 8px; border: none; }
+/* Auth Layout */
+.auth-box { margin: auto; text-align: center; width: 85%; }
+input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #1a1a3a; color: white; }
+.auth-buttons { display: flex; gap: 10px; margin-top: 20px; }
+button { flex: 1; padding: 15px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; background: linear-gradient(to right, #6a11cb, #2575fc); color: white; }
+.secondary { background: #333; }
 
-/* Room Styling */
-header { display: flex; justify-content: space-between; padding: 20px; }
-.avatar-grid { height: 50vh; display: flex; justify-content: center; align-items: center; }
-
-.avatar-wrapper { position: relative; width: 140px; height: 140px; }
-.avatar-wrapper img { 
-    width: 100%; border-radius: 50%; border: 4px solid var(--primary); 
-    position: relative; z-index: 2; cursor: pointer;
-}
-
-.is-vip img { border-color: var(--vip-gold) !important; }
-#vip-tag { position: absolute; bottom: 0; left: 35%; background: var(--vip-gold); color: black; font-weight: bold; padding: 2px 10px; border-radius: 10px; z-index: 10; }
-
-/* Glow Animation */
-.glow-ring { 
-    position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; 
-    border-radius: 50%; background: radial-gradient(circle, rgba(106,17,203,0.4) 0%, transparent 70%);
-    opacity: 0; transition: 0.1s;
-}
-.speaking .glow-ring { opacity: 1; transform: scale(1.2); }
-
-button { background: linear-gradient(45deg, #6a11cb, #2575fc); color: white; border: none; padding: 15px 40px; border-radius: 30px; width: 80%; }
+/* Room Layout */
+header { display: flex; justify-content: space-between; padding: 25px; align-items: center; }
+.online-dot { width: 10px; height: 10px; background: #00ff00; border-radius: 50%; display: inline-block; margin-right: 8px; }
+.avatar-grid { flex-grow: 1; display: grid; place-items: center; }
+.avatar-wrapper { position: relative; width: 150px; height: 150px; transition: 0.3s; }
+.avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--primary); z-index: 5; position: relative; object-fit: cover; }
+.is-vip img { border-color: var(--vip) !important; box-shadow: 0 0 15px var(--vip); }
+.glow-ring { position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; background: rgba(106, 17, 203, 0.3); opacity: 0; transition: 0.1s; }
+.speaking .glow-ring { opacity: 1; transform: scale(1.1); }
+footer { padding: 40px; text-align: center; }
+button#btn-action.active { background: #ff4b2b; }
