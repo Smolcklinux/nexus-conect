@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Conect | Login</title>
+    <title>Nexus Conect | Voice Experience</title>
     <link rel="stylesheet" href="./css/auth.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -11,40 +11,88 @@
 
     <div id="loading-screen" class="loading-overlay">
         <div class="loader"></div>
-        <p>Iniciando Nexus...</p>
+        <p style="margin-top: 15px; font-size: 10px; letter-spacing: 2px;">SYNCHRONIZING...</p>
+    </div>
+
+    <div id="age-section" class="auth-container">
+        <div class="glass-card">
+            <div class="nexus-logo-neon">N</div>
+            <h2 class="welcome-text">VERIFICAÇÃO</h2>
+            <p style="font-size: 14px; margin-bottom: 25px;">VOCÊ TEM 18 ANOS OU MAIS?</p>
+            <button id="btn-age-yes" class="btn-outline-cyan">SIM, EU TENHO</button>
+            <button onclick="window.close()" class="btn-outline-purple">NÃO</button>
+        </div>
     </div>
 
     <div id="auth-section" class="auth-container hidden">
         <div class="glass-card">
-            <div class="logo-area">
-                <div class="nexus-logo-neon">N</div>
-                <p class="brand-name">Nexus Conect</p>
-            </div>
-
-            <h2 class="welcome-text">BEM-VINDO(A) AO NEXUS</h2>
-
-            <div id="login-form" class="form-group">
+            <div class="nexus-logo-neon">N</div>
+            
+            <div id="login-form">
+                <h2 class="welcome-text">LOGIN</h2>
                 <input type="email" id="login-email" placeholder="E-MAIL" class="nexus-input">
                 <input type="password" id="login-password" placeholder="SENHA" class="nexus-input">
-                
-                <button id="btn-login" class="btn-outline-cyan">Login</button>
-                <button type="button" onclick="toggleAuth()" class="btn-outline-purple">CRIAR CONTA</button>
-                
-                <div class="auth-footer">
-                    <a href="#">Esqueceu a senha?</a>
-                    <p>Não tem conta? <span onclick="toggleAuth()">Toque para cadastrar</span></p>
-                </div>
+                <button id="btn-login" class="btn-outline-cyan">ENTRAR</button>
+                <p class="auth-footer">NÃO TEM CONTA? <span onclick="toggleAuth()">REGISTRE-SE</span></p>
             </div>
 
-            <div id="register-form" class="form-group hidden">
-                <input type="text" id="reg-username" placeholder="NOME DE USUÁRIO" class="nexus-input">
+            <div id="register-form" class="hidden">
+                <h2 class="welcome-text">CADASTRO</h2>
+                <input type="text" id="reg-username" placeholder="NOME" class="nexus-input">
                 <input type="email" id="reg-email" placeholder="E-MAIL" class="nexus-input">
                 <input type="password" id="reg-password" placeholder="SENHA" class="nexus-input">
-                
-                <button id="btn-register" class="btn-outline-purple">FINALIZAR CADASTRO</button>
-                <p class="auth-footer">
-                    <span onclick="toggleAuth()">Voltar para o Login</span>
-                </p>
+                <button id="btn-register" class="btn-outline-purple">CRIAR CONTA</button>
+                <p class="auth-footer">JÁ TEM CONTA? <span onclick="toggleAuth()">FAZER LOGIN</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="setup-section" class="auth-container hidden">
+        <div class="glass-card">
+            <h2 class="welcome-text">PERFIL</h2>
+            <div class="avatar-main-wrapper" style="position: relative; width: 100px; margin: 0 auto 20px;">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" id="main-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--cyan-neon);">
+                <label for="file-upload" style="position: absolute; bottom: 0; right: 0; background: var(--purple-neon); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">📷</label>
+                <input type="file" id="file-upload" accept="image/*" class="hidden">
+            </div>
+
+            <div class="avatar-selection">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="avatar-opt selected" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" class="avatar-opt" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Max" class="avatar-opt" data-url="https://api.dicebear.com/7.x/avataaars/svg?seed=Max">
+            </div>
+
+            <input type="hidden" id="selected-avatar-url" value="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
+            <input type="text" id="setup-nickname" placeholder="@username" class="nexus-input">
+            
+            <div id="interest-tags" class="tags-container" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 15px 0;">
+                <span class="tag" data-value="Games">GAMES</span>
+                <span class="tag" data-value="Tech">TECH</span>
+                <span class="tag" data-value="Music">MUSIC</span>
+            </div>
+
+            <button id="btn-save-setup" class="btn-outline-cyan">SALVAR E ENTRAR</button>
+        </div>
+    </div>
+
+    <div id="app-section" class="auth-container hidden">
+        <div class="glass-card" style="max-width: 450px;">
+            <div style="display: flex; justify-content: space-between; font-size: 10px; margin-bottom: 20px; color: var(--cyan-neon);">
+                <span>STAGE LIVE</span>
+                <span id="room-count">0 ONLINE</span>
+            </div>
+
+            <div class="equalizer-container">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+
+            <div id="stage-users" class="users-grid">
+                </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button id="btn-mic-toggle" class="btn-mic">🎙️</button>
+                <button id="btn-logout" class="btn-outline-purple" style="margin-bottom: 0;">SAIR</button>
             </div>
         </div>
     </div>
