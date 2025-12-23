@@ -14,11 +14,11 @@
             <div class="auth-box">
                 <h1>Nexus Conect</h1>
                 <p>Conecte-se com o mundo</p>
-                <input type="email" id="email" placeholder="Seu e-mail">
-                <input type="password" id="password" placeholder="Sua senha">
+                <input type="email" id="email" placeholder="E-mail">
+                <input type="password" id="password" placeholder="Senha">
                 <div class="auth-buttons">
                     <button onclick="handleLogin()" id="btn-login">Entrar</button>
-                    <button onclick="handleSignUp()" id="btn-signup" class="secondary">Cadastrar</button>
+                    <button onclick="handleSignUp()" id="btn-signup" class="secondary">Registar</button>
                 </div>
             </div>
         </div>
@@ -27,7 +27,7 @@
             <header>
                 <div class="logo-area">
                     <span class="online-dot"></span>
-                    <h2>Nexus Conect</h2>
+                    <h2 id="txt-logo">Nexus Conect</h2>
                 </div>
                 <select id="lang-select" onchange="updateLanguage(this.value)">
                     <option value="pt">Português</option>
@@ -45,6 +45,14 @@
                     </div>
                 </div>
                 <input type="file" id="file-input" class="hidden" accept="image/*" onchange="uploadPhoto(this)">
+
+                <div class="chat-area">
+                    <div id="chat-messages"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chat-input" placeholder="Escreva uma mensagem...">
+                        <button onclick="sendMessage()">Enviar</button>
+                    </div>
+                </div>
             </main>
 
             <footer>
