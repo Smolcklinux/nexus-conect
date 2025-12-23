@@ -1,78 +1,23 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Conect | Social Voice</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@vapi-ai/web/dist/bundle.js"></script>
+    <title>Nexus Conect</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://*.supabase.co; connect-src 'self' https://*.supabase.co https://api.ipify.org;">
 </head>
 <body>
-    <div id="app">
-        <section id="screen-auth" class="screen">
-            <div class="auth-card">
-                <h1>Nexus</h1>
-                <input type="email" id="login-email" placeholder="E-mail">
-                <input type="password" id="login-pass" placeholder="Senha">
-                <button onclick="authAction('login')">Entrar</button>
-                <button onclick="authAction('signup')" class="btn-flat">Criar Conta</button>
-            </div>
-        </section>
-
-        <section id="screen-home" class="screen hidden">
-            <nav class="top-nav">
-                <span>Explorar</span>
-                <div class="nav-icons">
-                    <button onclick="showScreen('screen-profile')" class="btn-icon">👤</button>
-                </div>
-            </nav>
-            <div class="rooms-list">
-                <div class="room-card" onclick="joinRoom('Global Lounge')">
-                    <h3>🌍 Global Lounge</h3>
-                    <p>Conversas aleatórias e música</p>
-                    <span class="badge">Ativa</span>
-                </div>
-            </div>
-        </section>
-
-        <section id="screen-profile" class="screen hidden">
-            <header class="sub-header">
-                <button onclick="showScreen('screen-home')">← Voltar</button>
-                <h2>Meu Perfil</h2>
-            </header>
-            <div class="profile-editor">
-                <div class="avatar-upload">
-                    <img src="" id="profile-img-preview">
-                    <input type="file" id="avatar-file" onchange="uploadAvatar()">
-                </div>
-                <input type="text" id="profile-name" placeholder="Seu Nome">
-                <textarea id="profile-bio" placeholder="Sua biografia..."></textarea>
-                <button onclick="saveProfile()" class="btn-save">Salvar Alterações</button>
-                <button onclick="logout()" class="btn-danger">Sair da Conta</button>
-            </div>
-        </section>
-
-        <section id="screen-room" class="screen hidden">
-            <header class="room-header">
-                <button onclick="leaveRoom()">✕ Sair</button>
-                <h2 id="current-room-name">Sala</h2>
-            </header>
-            <div class="voice-grid" id="participants-grid">
-                </div>
-            <div class="chat-container">
-                <div id="chat-feed"></div>
-                <div class="chat-input">
-                    <input type="text" id="msg-input" placeholder="Diga algo...">
-                    <button onclick="sendChatMessage()">➤</button>
-                </div>
-            </div>
-            <footer class="voice-controls">
-                <button id="btn-mic" onclick="toggleVoice()">🎙️ Entrar na Voz</button>
-            </footer>
-        </section>
+    <div id="app-container">
+        <div id="loading-screen">
+            <img src="assets/images/logo.png" alt="Nexus Logo" class="logo-pulse">
+            <p>Verificando segurança...</p>
+        </div>
     </div>
 
-    <script src="main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

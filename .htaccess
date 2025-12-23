@@ -1,0 +1,20 @@
+# NEXUS CONECT - Proteção de Diretório
+RewriteEngine On
+
+# 1. Remover o .html da URL (Fica mais profissional)
+RewriteCond % {REQUEST_FILENAME} !-d
+RewriteCond % {REQUEST_FILENAME}\.html -f
+RewriteRule ^(.*)$ $1.html [NC,L]
+
+# 2. Impedir listagem de pastas (Ninguém vê seus arquivos soltos)
+Options -Indexes
+
+# 3. Bloquear acesso direto à pasta de módulos JS (Força o uso do main.js)
+<Directory "/js/modules">
+    Order deny,allow
+    Deny from all
+</Directory>
+
+# 4. Forçar HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
