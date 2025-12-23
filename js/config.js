@@ -4,16 +4,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_yLkb1C_IVOqiQ-yfxdi7hA_wgqfcJdz";
 export const nexusClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: {
         autoRefreshToken: true,
-        persistSession: true
-    },
-    realtime: {
-        params: {
-            events_per_second: 10
-        }
+        persistSession: true,
+        detectSessionInUrl: true // Adicione isso para ajudar na detecção
     }
 });
-
-export const NEXUS_CONFIG = {
-    VERSION: "1.2.0-NEBULA",
-    BASE_URL: "https://smolcklinux.github.io/nexus-conect/"
-};
