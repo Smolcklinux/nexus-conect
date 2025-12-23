@@ -1,8 +1,5 @@
-import { supabase, NEXUS_CONFIG } from './config.js';
-import { Auth } from './modules/auth.js';
-import { Security } from './modules/security.js';
+import { supabase } from './config.js';
 
-// Elementos da Interface
 const ui = {
     loading: document.getElementById('loading-screen'),
     auth: document.getElementById('auth-section'),
@@ -12,94 +9,59 @@ const ui = {
     authTitle: document.getElementById('auth-title')
 };
 
-/**
- * Inicialização do App
- */
+// INICIALIZAÇÃO DIRETA
 async function init() {
-    try {
-        // 1. Verificação de Banimento por Hardware (IP/MAC)
-        const isBanned = await Security.checkHardwareBan();
-        if (isBanned) {
-            window.location.href = 'banned.html';
-            return;
-        }
+    console.log("Nexus: Iniciando sem travas de segurança externa.");
+    
+    // Verifica apenas se o usuário já está logado no Supabase
+    const { data: { session } } = await supabase.auth.getSession();
 
-        // 2. Verificar Sessão
-        const { data: { session } } = await supabase.auth.getSession();
+    ui.loading.classList.add('hidden'); // Remove o loading na hora
 
-        if (session) {
-            showApp();
-        } else {
-            showAuth();
-        }
-    } catch (err) {
-        console.error("Erro na inicialização:", err);
-        showAuth(); // Fallback para login se algo falhar
+    if (session) {
+        ui.app.classList.remove('hidden');
+    } else {
+        ui.auth.classList.remove('hidden');
     }
 }
 
-// Alternar Telas
-function showAuth() {
-    ui.loading.classList.add('hidden');
-    ui.app.classList.add('hidden');
-    ui.auth.classList.remove('hidden');
-}
-
-function showApp() {
-    ui.loading.classList.add('hidden');
-    ui.auth.classList.add('hidden');
-    ui.app.classList.remove('hidden');
-    // Iniciar funções do chat aqui...
-}
-
-/**
- * LÓGICA DE LOGIN
- */
+// LOGIN
 document.getElementById('btn-login')?.addEventListener('click', async () => {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-password').value;
-
-    try {
-        await Auth.signIn(email, pass);
-        showApp();
-    } catch (error) {
-        alert("Erro no acesso: " + error.message);
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    
+    if (error) alert("Erro: " + error.message);
+    else location.reload();
 });
 
-/**
- * LÓGICA DE REGISTRO
- */
+// CADASTRO
 document.getElementById('btn-register')?.addEventListener('click', async () => {
-    const user = document.getElementById('reg-username').value;
     const email = document.getElementById('reg-email').value;
     const pass = document.getElementById('reg-password').value;
+    const user = document.getElementById('reg-username').value;
 
-    try {
-        await Auth.signUp(email, pass, user);
-        alert("Conta criada! Verifique seu e-mail ou faça login.");
-        toggleAuth();
-    } catch (error) {
-        alert("Erro ao cadastrar: " + error.message);
-    }
+    const { error } = await supabase.auth.signUp({ 
+        email, 
+        password: pass,
+        options: { data: { username: user } }
+    });
+
+    if (error) alert("Erro: " + error.message);
+    else alert("Conta criada! Verifique seu e-mail.");
 });
 
-/**
- * SAIR DO SISTEMA
- */
-window.handleLogout = async () => {
-    await Auth.signOut();
+// SAIR
+document.getElementById('btn-logout')?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
     location.reload();
-};
+});
 
-// Tornar o toggleAuth acessível pelo HTML
+// ALTERNAR TELAS
 window.toggleAuth = () => {
     ui.loginForm.classList.toggle('hidden');
     ui.registerForm.classList.toggle('hidden');
-    ui.authTitle.innerText = ui.loginForm.classList.contains('hidden') 
-        ? "Criar Conta Nexus" 
-        : "Entrar no Nexus";
+    ui.authTitle.innerText = ui.loginForm.classList.contains('hidden') ? "Criar Conta" : "Entrar no Nexus";
 };
 
-// Iniciar tudo
 document.addEventListener('DOMContentLoaded', init);
