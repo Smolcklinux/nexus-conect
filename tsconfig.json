@@ -20,7 +20,7 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "app", "lib", "vite.config.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src", "app", "lib", "vite.config.ts"]
 }
+
 
