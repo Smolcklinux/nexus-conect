@@ -8,81 +8,22 @@
     <link rel="stylesheet" href="./css/main.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Estilos específicos para o Stage de Cadeiras */
-        .stage-canvas {
-            max-width: 500px !important;
-            padding: 20px !important;
-            background: #050505 !important;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .stage-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: var(--cyan-neon);
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .top-stage { margin-bottom: 30px; }
-        .slots-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-            width: 100%;
-        }
-        .slot-node {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-        .slot {
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            border: 2px solid #1a1a1a;
-            background: #0d0d0d;
-            cursor: pointer;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .owner-slot {
-            width: 90px;
-            height: 90px;
-            border-color: var(--purple-neon);
-            box-shadow: 0 0 15px rgba(188, 0, 255, 0.2);
-        }
-        .slot.occupied { border-color: var(--cyan-neon); }
-        .slot.speaking { border-color: var(--cyan-neon); box-shadow: 0 0 20px var(--cyan-neon); }
-        .slot img { width: 100%; height: 100%; object-fit: cover; }
-        .slot-label { font-size: 8px; color: #444; font-weight: bold; }
-        .stage-controls {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-        }
-        .btn-mic {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 2px solid var(--cyan-neon);
-            background: transparent;
-            color: var(--cyan-neon);
-            cursor: pointer;
-            font-size: 10px;
-            margin: 0 auto;
-            transition: 0.3s;
-        }
-        .btn-mic.active { background: var(--cyan-neon); color: #000; box-shadow: 0 0 20px var(--cyan-neon); }
+        .password-wrapper { position: relative; width: 100%; }
+        .toggle-password { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--cyan-neon); cursor: pointer; font-size: 14px; opacity: 0.6; z-index: 10; }
+        
+        /* Ranks e Tags */
+        .rank-owner { border: 3px solid #ffcc00 !important; box-shadow: 0 0 15px rgba(255, 204, 0, 0.5) !important; }
+        .rank-vip { border: 2px solid var(--cyan-neon) !important; box-shadow: 0 0 10px rgba(0, 242, 255, 0.4) !important; }
+        .rank-tag { position: absolute; bottom: -5px; background: #ffcc00; color: black; font-size: 7px; font-weight: 900; padding: 2px 5px; border-radius: 4px; text-transform: uppercase; pointer-events: none; }
+        .tag-vip { background: var(--cyan-neon); }
+
+        /* MINI CARD DE PERFIL */
+        .profile-card-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 20000; transition: 0.3s; }
+        .profile-card { background: #0a0a0a; border: 1px solid var(--border-dim); width: 280px; border-radius: 24px; padding: 20px; text-align: center; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        .profile-card .avatar-large { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cyan-neon); margin-bottom: 10px; }
+        .profile-card h3 { margin: 5px 0; font-size: 18px; color: #fff; }
+        .profile-card p { font-size: 12px; color: #888; margin-bottom: 20px; line-height: 1.4; padding: 0 10px; }
+        .close-card { position: absolute; top: 15px; right: 15px; color: #444; cursor: pointer; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -92,33 +33,60 @@
         <p style="margin-top: 15px; font-size: 10px; letter-spacing: 2px;">NEXUS SYSTEM LOADING...</p>
     </div>
 
+    <div id="profile-modal" class="profile-card-overlay hidden" onclick="closeProfileCard(event)">
+        <div class="profile-card" onclick="event.stopPropagation()">
+            <span class="close-card" onclick="closeProfileCard(null)">×</span>
+            <img src="" id="p-card-avatar" class="avatar-large">
+            <h3 id="p-card-nick">@username</h3>
+            <div id="p-card-rank" style="font-size: 9px; margin-bottom: 10px; font-weight: 900;">USER</div>
+            <p id="p-card-bio">Nenhuma bio definida ainda.</p>
+            <button class="btn-outline-cyan" style="padding: 10px; font-size: 9px;">SEGUIR USUÁRIO</button>
+        </div>
+    </div>
+
+    <div id="password-modal" class="loading-overlay hidden" style="background: rgba(0,0,0,0.9); z-index: 10001;">
+        <div class="glass-card" style="max-width: 320px;">
+            <h2 class="welcome-text">SALA PRIVADA</h2>
+            <div class="password-wrapper">
+                <input type="password" id="input-room-password" placeholder="SENHA" class="nexus-input">
+                <button class="toggle-password" onclick="togglePasswordVisibility('input-room-password')">👁️</button>
+            </div>
+            <button id="btn-verify-password" class="btn-outline-cyan">ACESSAR STAGE</button>
+        </div>
+    </div>
+
     <div id="age-section" class="auth-container">
         <div class="glass-card">
             <div class="nexus-logo-neon">N</div>
             <h2 class="welcome-text">VERIFICAÇÃO</h2>
-            <p style="font-size: 14px; margin-bottom: 25px;">VOCÊ TEM 18 ANOS OU MAIS?</p>
-            <button id="btn-age-yes" class="btn-outline-cyan">SIM, EU TENHO</button>
+            <p style="font-size: 14px; margin-bottom: 25px;">18 ANOS OU MAIS?</p>
+            <button id="btn-age-yes" class="btn-outline-cyan">SIM</button>
             <button onclick="window.close()" class="btn-outline-purple">NÃO</button>
         </div>
     </div>
 
     <div id="auth-section" class="auth-container hidden">
         <div class="glass-card">
-            <div class="nexus-logo-neon">N</div>
             <div id="login-form">
                 <h2 class="welcome-text">LOGIN</h2>
                 <input type="email" id="login-email" placeholder="E-MAIL" class="nexus-input">
-                <input type="password" id="login-password" placeholder="SENHA" class="nexus-input">
+                <div class="password-wrapper">
+                    <input type="password" id="login-password" placeholder="SENHA" class="nexus-input">
+                    <button class="toggle-password" onclick="togglePasswordVisibility('login-password')">👁️</button>
+                </div>
                 <button id="btn-login" class="btn-outline-cyan">ENTRAR</button>
-                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">NÃO TEM CONTA? <span onclick="toggleAuth()" style="color: var(--cyan-neon)">REGISTRE-SE</span></p>
+                <p onclick="toggleAuth()" style="font-size: 10px; margin-top: 15px; cursor: pointer;">NÃO TEM CONTA? REGISTRE-SE</p>
             </div>
             <div id="register-form" class="hidden">
                 <h2 class="welcome-text">CADASTRO</h2>
                 <input type="text" id="reg-username" placeholder="NOME" class="nexus-input">
                 <input type="email" id="reg-email" placeholder="E-MAIL" class="nexus-input">
-                <input type="password" id="reg-password" placeholder="SENHA" class="nexus-input">
+                <div class="password-wrapper">
+                    <input type="password" id="reg-password" placeholder="SENHA" class="nexus-input">
+                    <button class="toggle-password" onclick="togglePasswordVisibility('reg-password')">👁️</button>
+                </div>
                 <button id="btn-register" class="btn-outline-purple">CRIAR CONTA</button>
-                <p class="auth-footer" style="font-size: 10px; margin-top: 15px; cursor: pointer;">JÁ TEM CONTA? <span onclick="toggleAuth()" style="color: var(--purple-neon)">FAZER LOGIN</span></p>
+                <p onclick="toggleAuth()" style="font-size: 10px; margin-top: 15px; cursor: pointer;">JÁ TEM CONTA? LOGIN</p>
             </div>
         </div>
     </div>
@@ -126,15 +94,10 @@
     <div id="setup-section" class="auth-container hidden">
         <div class="glass-card">
             <h2 class="welcome-text">PERFIL</h2>
-            <div class="avatar-main-wrapper" style="position: relative; width: 100px; margin: 0 auto 20px;">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" id="main-avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid var(--cyan-neon);">
-                <label for="file-upload" style="position: absolute; bottom: 0; right: 0; background: var(--purple-neon); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px;">UP</label>
-                <input type="file" id="file-upload" accept="image/*" class="hidden">
-            </div>
-            <input type="hidden" id="selected-avatar-url" value="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" id="main-avatar-preview" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--cyan-neon); margin-bottom: 15px;">
             <input type="text" id="setup-nickname" placeholder="@username" class="nexus-input">
-            <textarea id="setup-bio" placeholder="SUA BIO..." class="nexus-input" style="height: 80px;"></textarea>
-            <button id="btn-save-setup" class="btn-outline-cyan">SALVAR E ENTRAR</button>
+            <textarea id="setup-bio" placeholder="SUA BIO..." class="nexus-input" style="height: 60px;"></textarea>
+            <button id="btn-save-setup" class="btn-outline-cyan">SALVAR</button>
         </div>
     </div>
 
@@ -142,32 +105,27 @@
         <div class="glass-card stage-canvas">
             <div class="stage-header">
                 <div class="room-id-badge">ID: <span id="display-room-id">---</span></div>
+                <div id="room-privacy-status" style="color: var(--purple-neon); font-weight: bold;">🔓 PÚBLICA</div>
                 <div id="room-count">0 ONLINE</div>
             </div>
-
             <div class="top-stage">
-                <div class="slot-node">
-                    <div class="slot owner-slot" id="slot-0" onclick="handleSeatAction(0)"></div>
-                    <span class="slot-label">ADMIN</span>
-                </div>
+                <div class="slot-node"><div class="slot owner-slot" id="slot-0" onclick="handleSlotClick(0)"></div><span class="slot-label">ADMIN</span></div>
             </div>
-
             <div class="slots-grid">
-                <div class="slot-node"><div class="slot" id="slot-1" onclick="handleSeatAction(1)"></div><span class="slot-label">01</span></div>
-                <div class="slot-node"><div class="slot" id="slot-2" onclick="handleSeatAction(2)"></div><span class="slot-label">02</span></div>
-                <div class="slot-node"><div class="slot" id="slot-3" onclick="handleSeatAction(3)"></div><span class="slot-label">03</span></div>
-                <div class="slot-node"><div class="slot" id="slot-4" onclick="handleSeatAction(4)"></div><span class="slot-label">04</span></div>
-                <div class="slot-node"><div class="slot" id="slot-5" onclick="handleSeatAction(5)"></div><span class="slot-label">05</span></div>
-                <div class="slot-node"><div class="slot" id="slot-6" onclick="handleSeatAction(6)"></div><span class="slot-label">06</span></div>
-                <div class="slot-node"><div class="slot" id="slot-7" onclick="handleSeatAction(7)"></div><span class="slot-label">07</span></div>
-                <div class="slot-node"><div class="slot" id="slot-8" onclick="handleSeatAction(8)"></div><span class="slot-label">08</span></div>
+                <div class="slot-node"><div class="slot" id="slot-1" onclick="handleSlotClick(1)"></div><span class="slot-label">01</span></div>
+                <div class="slot-node"><div class="slot" id="slot-2" onclick="handleSlotClick(2)"></div><span class="slot-label">02</span></div>
+                <div class="slot-node"><div class="slot" id="slot-3" onclick="handleSlotClick(3)"></div><span class="slot-label">03</span></div>
+                <div class="slot-node"><div class="slot" id="slot-4" onclick="handleSlotClick(4)"></div><span class="slot-label">04</span></div>
+                <div class="slot-node"><div class="slot" id="slot-5" onclick="handleSlotClick(5)"></div><span class="slot-label">05</span></div>
+                <div class="slot-node"><div class="slot" id="slot-6" onclick="handleSlotClick(6)"></div><span class="slot-label">06</span></div>
+                <div class="slot-node"><div class="slot" id="slot-7" onclick="handleSlotClick(7)"></div><span class="slot-label">07</span></div>
+                <div class="slot-node"><div class="slot" id="slot-8" onclick="handleSlotClick(8)"></div><span class="slot-label">08</span></div>
             </div>
-
             <div class="stage-controls">
                 <button id="btn-mic-toggle" class="btn-mic" onclick="toggleMic()">MIC</button>
                 <div style="display: flex; gap: 10px; width: 100%;">
-                    <button id="btn-share" class="btn-outline-cyan" onclick="shareInvite()" style="flex: 1; font-size: 10px;">CONVIDAR</button>
-                    <button id="btn-logout-nexus" class="btn-outline-purple" style="flex: 1; font-size: 10px;">SAIR</button>
+                    <button onclick="shareInvite()" class="btn-outline-cyan" style="flex: 1; font-size: 10px;">CONVIDAR</button>
+                    <button id="btn-admin-lock" class="btn-outline-purple hidden" onclick="togglePrivacy()" style="flex: 1; font-size: 10px;">TRANCAR</button>
                 </div>
             </div>
         </div>
@@ -175,10 +133,15 @@
 
     <script type="module" src="./js/main.js"></script>
     <script>
-        // Funções globais para botões onclick
         function toggleAuth() {
             document.getElementById('login-form').classList.toggle('hidden');
             document.getElementById('register-form').classList.toggle('hidden');
+        }
+        function togglePasswordVisibility(id) {
+            const i = document.getElementById(id); i.type = i.type === "password" ? "text" : "password";
+        }
+        function closeProfileCard(e) { 
+            document.getElementById('profile-modal').classList.add('hidden'); 
         }
     </script>
 </body>
