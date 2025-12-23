@@ -3,21 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Conect</title>
+    <title>Nexus Conect | Conexão Segura</title>
+    
     <link rel="stylesheet" href="css/main.css">
     <link rel="stylesheet" href="css/auth.css">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://*.supabase.co; connect-src 'self' https://*.supabase.co https://api.ipify.org;">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/chat.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div id="app-container">
-        <div id="loading-screen">
-            <img src="assets/images/logo.png" alt="Nexus Logo" class="logo-pulse">
-            <p>Verificando segurança...</p>
+
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <p>Iniciando Nexus...</p>
+    </div>
+
+    <div id="auth-section" class="hidden">
+        <div class="auth-container">
+            <div class="ban-card"> <h1 id="auth-title">Entrar no Nexus</h1>
+                
+                <div id="login-form">
+                    <input type="email" id="login-email" placeholder="E-mail" class="auth-input">
+                    <input type="password" id="login-password" placeholder="Senha" class="auth-input">
+                    <button id="btn-login" class="btn-recorrer">ACESSAR SISTEMA</button>
+                    <p style="margin-top:15px; cursor:pointer" onclick="toggleAuth()">
+                        Não tem conta? <span style="color:var(--nexus-accent)">Cadastre-se</span>
+                    </p>
+                </div>
+
+                <div id="register-form" class="hidden">
+                    <input type="text" id="reg-username" placeholder="Nome de Usuário" class="auth-input">
+                    <input type="email" id="reg-email" placeholder="E-mail" class="auth-input">
+                    <input type="password" id="reg-password" placeholder="Senha" class="auth-input">
+                    <button id="btn-register" class="btn-recorrer">CRIAR CONTA</button>
+                    <p style="margin-top:15px; cursor:pointer" onclick="toggleAuth()">
+                        Já tem conta? <span style="color:var(--nexus-accent)">Fazer Login</span>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/config.js"></script>
+    <div id="app-section" class="hidden">
+        <div class="chat-wrapper">
+            <div class="side-panel">
+                <div class="header" style="padding:20px;">
+                    <h3>Amigos</h3>
+                </div>
+                <div id="friends-list" class="friends-list"></div>
+                <button onclick="handleLogout()" class="btn-sair" style="margin:10px;">Sair</button>
+            </div>
+            
+            <div class="main-chat">
+                <div class="chat-header">
+                    <span id="current-room-name">Lobby Principal</span>
+                </div>
+                <div id="messages-container" class="messages-container"></div>
+                <div class="input-area">
+                    <input type="text" id="chat-input" placeholder="Digite sua mensagem..." class="chat-input">
+                    <button id="btn-send" class="btn-primary">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

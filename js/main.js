@@ -1,62 +1,105 @@
-import { supabase } from './config.js';
+import { supabase, NEXUS_CONFIG } from './config.js';
+import { Auth } from './modules/auth.js';
 import { Security } from './modules/security.js';
 
-async function bootstrap() {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { window.location.href = 'login.html'; return; }
+// Elementos da Interface
+const ui = {
+    loading: document.getElementById('loading-screen'),
+    auth: document.getElementById('auth-section'),
+    app: document.getElementById('app-section'),
+    loginForm: document.getElementById('login-form'),
+    registerForm: document.getElementById('register-form'),
+    authTitle: document.getElementById('auth-title')
+};
 
+/**
+ * Inicialização do App
+ */
+async function init() {
     try {
-        // 1. Captura Dados de Rede Silenciosamente
-        const ipRes = await fetch('https://api.ipify.org?format=json');
-        const { ip } = await ipRes.json();
-        const mac = await Security.getFingerprint();
-
-        // 2. Busca Perfil no Banco
-        const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-
-        // 3. Verificação de Staff (Exceção às regras de limite)
-        const isStaff = ['owner', 'adm'].includes(profile.role);
-
-        if (!isStaff) {
-            // A. Verificação de Banimento (IP/MAC ou Conta)
-            const { data: isBlacklisted } = await supabase.from('blacklist_network')
-                .select('*').or(`network_value.eq.${ip},network_value.eq.${mac}`).single();
-
-            const isBanned = profile.banned_until && new Date(profile.banned_until) > new Date();
-
-            if (isBlacklisted || isBanned) {
-                renderBanScreen(isBlacklisted?.reason || profile.ban_reason);
-                return;
-            }
-
-            // B. Trava de 5 Contas Máximo
-            const { count } = await supabase.from('profiles')
-                .select('*', { count: 'exact', head: true })
-                .or(`last_ip.eq.${ip},last_mac.eq.${mac}`);
-
-            if (count > 5) {
-                renderLimitScreen();
-                return;
-            }
+        // 1. Verificação de Banimento por Hardware (IP/MAC)
+        const isBanned = await Security.checkHardwareBan();
+        if (isBanned) {
+            window.location.href = 'banned.html';
+            return;
         }
 
-        // 4. Atualiza Logs e Inicia App
-        await supabase.from('profiles').update({ last_ip: ip, last_mac: mac }).eq('id', user.id);
-        Security.initAntiInspect(profile.role);
-        startNexusApp(); // Carrega a interface real
+        // 2. Verificar Sessão
+        const { data: { session } } = await supabase.auth.getSession();
 
+        if (session) {
+            showApp();
+        } else {
+            showAuth();
+        }
     } catch (err) {
-        console.error("Erro Crítico de Segurança:", err);
+        console.error("Erro na inicialização:", err);
+        showAuth(); // Fallback para login se algo falhar
     }
 }
 
-function renderBanScreen(reason) {
-    document.getElementById('app-container').innerHTML = `
-        <div class="ban-screen">
-            <h1>🚫 CONTA BLOQUEADA</h1>
-            <p>Motivo: <strong>${reason}</strong></p>
-            <a href="https://suporte.nexus.com" class="btn">Recorrer</a>
-        </div>`;
+// Alternar Telas
+function showAuth() {
+    ui.loading.classList.add('hidden');
+    ui.app.classList.add('hidden');
+    ui.auth.classList.remove('hidden');
 }
 
-bootstrap();
+function showApp() {
+    ui.loading.classList.add('hidden');
+    ui.auth.classList.add('hidden');
+    ui.app.classList.remove('hidden');
+    // Iniciar funções do chat aqui...
+}
+
+/**
+ * LÓGICA DE LOGIN
+ */
+document.getElementById('btn-login')?.addEventListener('click', async () => {
+    const email = document.getElementById('login-email').value;
+    const pass = document.getElementById('login-password').value;
+
+    try {
+        await Auth.signIn(email, pass);
+        showApp();
+    } catch (error) {
+        alert("Erro no acesso: " + error.message);
+    }
+});
+
+/**
+ * LÓGICA DE REGISTRO
+ */
+document.getElementById('btn-register')?.addEventListener('click', async () => {
+    const user = document.getElementById('reg-username').value;
+    const email = document.getElementById('reg-email').value;
+    const pass = document.getElementById('reg-password').value;
+
+    try {
+        await Auth.signUp(email, pass, user);
+        alert("Conta criada! Verifique seu e-mail ou faça login.");
+        toggleAuth();
+    } catch (error) {
+        alert("Erro ao cadastrar: " + error.message);
+    }
+});
+
+/**
+ * SAIR DO SISTEMA
+ */
+window.handleLogout = async () => {
+    await Auth.signOut();
+    location.reload();
+};
+
+// Tornar o toggleAuth acessível pelo HTML
+window.toggleAuth = () => {
+    ui.loginForm.classList.toggle('hidden');
+    ui.registerForm.classList.toggle('hidden');
+    ui.authTitle.innerText = ui.loginForm.classList.contains('hidden') 
+        ? "Criar Conta Nexus" 
+        : "Entrar no Nexus";
+};
+
+// Iniciar tudo
+document.addEventListener('DOMContentLoaded', init);
