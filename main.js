@@ -6,34 +6,28 @@ const CONFIG = {
     SQUAD_ID: "9520961a-3a93-4e15-9095-00fd09a377b1"
 };
 
-// 2. Inicialização dos Clientes (COM PROTEÇÃO)
+// 2. Inicialização Segura dos Clientes
 window.supabaseClient = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_KEY);
-
-// Função para inicializar a Vapi com segurança
 window.vapiInstance = null;
-function startVapi() {
+
+function initVapi() {
     if (typeof Vapi !== 'undefined') {
         window.vapiInstance = new Vapi(CONFIG.VAPI_KEY);
-        
-        // Configura a animação de fala (Glow) assim que carregar
-        window.vapiInstance.on('volume-level', (v) => {
-            const el = document.getElementById('local-user');
-            if (el) v > 0.05 ? el.classList.add('speaking') : el.classList.remove('speaking');
-        });
-        console.log("Vapi carregada!");
+        setupVapiEvents();
+        console.log("Vapi carregada com sucesso.");
     } else {
         console.log("Aguardando biblioteca Vapi...");
-        setTimeout(startVapi, 500); // Tenta de novo em meio segundo
+        setTimeout(initVapi, 500);
     }
 }
-startVapi();
+initVapi();
 
 let currentLang = 'pt';
 
-// 3. Lógica de Voz
+// 3. Lógica de Voz e Animação (Glow)
 async function handleAction() {
     const btn = document.getElementById('btn-action');
-    if (!window.vapiInstance) return alert("O sistema de voz ainda está carregando. Tente novamente em instantes.");
+    if (!window.vapiInstance) return alert("O sistema de voz ainda está a carregar...");
 
     if (!window.vapiInstance.isCallActive()) {
         try {
@@ -41,14 +35,33 @@ async function handleAction() {
             btn.innerText = translations[currentLang].leave;
             btn.style.background = "#ff4b2b";
         } catch (e) { 
-            console.error(e);
-            alert("Erro ao ligar microfone. Verifique as permissões HTTPS."); 
+            console.error("Erro ao conectar:", e);
+            alert("Erro ao aceder ao microfone."); 
         }
     } else {
         window.vapiInstance.stop();
         btn.innerText = translations[currentLang].join;
         btn.style.background = "";
     }
+}
+
+function setupVapiEvents() {
+    window.vapiInstance.on('volume-level', (v) => {
+        const el = document.getElementById('local-user');
+        // Correção para o erro de classList: verifica se o elemento existe na tela
+        if (el) {
+            if (v > 0.05) {
+                el.classList.add('speaking');
+            } else {
+                el.classList.remove('speaking');
+            }
+        }
+    });
+
+    window.vapiInstance.on('error', (e) => {
+        console.error("Erro Vapi:", e);
+        window.vapiInstance.stop();
+    });
 }
 
 // 4. Chat em Tempo Real
@@ -67,67 +80,48 @@ async function sendMessage() {
     input.value = "";
 }
 
+// Escuta novas mensagens via Realtime
 window.supabaseClient
     .channel('public:messages')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-        renderMessage(payload.new);
-    })
-    .subscribe();
+        const container = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        div.className = 'msg-bubble';
+        div.innerHTML = `<b>${payload.new.user_name}:</b> ${payload.new.content}`;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }).subscribe();
 
-function renderMessage(msg) {
-    const container = document.getElementById('chat-messages');
-    const div = document.createElement('div');
-    div.className = 'msg-bubble';
-    div.innerHTML = `<b>${msg.user_name}:</b> ${msg.content}`;
-    container.appendChild(div);
-    container.scrollTop = container.scrollHeight;
-}
-
-// 5. Presença (Quem está Online)
+// 5. Presença (Usuários Online)
 const roomChannel = window.supabaseClient.channel('nexus_room', { config: { presence: { key: 'user' } } });
 
-roomChannel
-    .on('presence', { event: 'sync' }, () => {
-        const state = roomChannel.presenceState();
-        updateOnlineUsers(state);
-    })
-    .subscribe(async (s) => {
-        if (s === 'SUBSCRIBED') {
-            const { data: { user } } = await window.supabaseClient.auth.getUser();
-            const isVip = document.getElementById('local-user').classList.contains('is-vip');
-            await roomChannel.track({ 
-                id: user.id, 
-                avatar: document.getElementById('user-img').src,
-                is_vip: isVip
-            });
-        }
-    });
-
-function updateOnlineUsers(state) {
+roomChannel.on('presence', { event: 'sync' }, () => {
+    const state = roomChannel.presenceState();
     const grid = document.querySelector('.avatar-grid');
     grid.querySelectorAll('.avatar-wrapper:not(#local-user)').forEach(el => el.remove());
     
     const myId = window.supabaseClient.auth.user()?.id;
     Object.values(state).forEach(presences => {
         presences.forEach(user => {
-            if (user.id !== myId) renderUserAvatar(user);
+            if (user.id !== myId) {
+                const div = document.createElement('div');
+                div.className = `avatar-wrapper ${user.is_vip ? 'is-vip' : ''}`;
+                div.innerHTML = `<div class="glow-ring"></div><img src="${user.avatar}">`;
+                grid.appendChild(div);
+            }
         });
     });
-}
+}).subscribe(async (status) => {
+    if (status === 'SUBSCRIBED') {
+        const { data: { user } } = await window.supabaseClient.auth.getUser();
+        await roomChannel.track({ 
+            id: user.id, 
+            avatar: document.getElementById('user-img').src,
+            is_vip: document.getElementById('local-user').classList.contains('is-vip')
+        });
+    }
+});
 
-function renderUserAvatar(user) {
-    const grid = document.querySelector('.avatar-grid');
-    const div = document.createElement('div');
-    div.className = `avatar-wrapper ${user.is_vip ? 'is-vip' : ''}`;
-    div.innerHTML = `
-        <div class="glow-ring"></div>
-        <img src="${user.avatar}">
-        ${user.is_vip ? '<span id="vip-tag">VIP</span>' : ''}
-    `;
-    grid.appendChild(div);
-}
-
-// 6. Tradução
 function updateLanguage(lang) {
     currentLang = lang;
     const btn = document.getElementById('btn-action');

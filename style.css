@@ -1,23 +1,212 @@
-:root { --primary: #6a11cb; --vip: #ffd700; --bg: #0f0c29; }
-body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; }
+/* Configurações de Cores e Fontes */
+:root {
+    --bg-dark: #0f0c29;
+    --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    --accent-purple: #a855f7;
+    --accent-blue: #3b82f6;
+    --vip-gold: #fbbf24;
+    --msg-bg: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: var(--bg-gradient);
+    height: 100vh;
+    color: white;
+    overflow: hidden;
+}
+
 .hidden { display: none !important; }
-.screen { width: 100%; height: 100vh; display: flex; flex-direction: column; }
 
-/* Auth Layout */
-.auth-box { margin: auto; text-align: center; width: 85%; }
-input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; background: #1a1a3a; color: white; }
-.auth-buttons { display: flex; gap: 10px; margin-top: 20px; }
-button { flex: 1; padding: 15px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; background: linear-gradient(to right, #6a11cb, #2575fc); color: white; }
-.secondary { background: #333; }
+/* --- TELA DE LOGIN --- */
+#auth-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-/* Room Layout */
-header { display: flex; justify-content: space-between; padding: 25px; align-items: center; }
-.online-dot { width: 10px; height: 10px; background: #00ff00; border-radius: 50%; display: inline-block; margin-right: 8px; }
-.avatar-grid { flex-grow: 1; display: grid; place-items: center; }
-.avatar-wrapper { position: relative; width: 150px; height: 150px; transition: 0.3s; }
-.avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--primary); z-index: 5; position: relative; object-fit: cover; }
-.is-vip img { border-color: var(--vip) !important; box-shadow: 0 0 15px var(--vip); }
-.glow-ring { position: absolute; top: -15px; left: -15px; right: -15px; bottom: -15px; border-radius: 50%; background: rgba(106, 17, 203, 0.3); opacity: 0; transition: 0.1s; }
-.speaking .glow-ring { opacity: 1; transform: scale(1.1); }
-footer { padding: 40px; text-align: center; }
-button#btn-action.active { background: #ff4b2b; }
+.auth-box {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 2rem;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+}
+
+.auth-box input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+    background: linear-gradient(to right, var(--accent-purple), var(--accent-blue));
+    color: white;
+}
+
+button.secondary {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* --- TELA DA SALA (MAIN) --- */
+header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.room-container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 160px);
+}
+
+/* Grade de Avatares */
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    justify-items: center;
+}
+
+.avatar-wrapper {
+    position: relative;
+    width: 70px;
+    height: 70px;
+}
+
+.avatar-wrapper img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid #555;
+    object-fit: cover;
+    z-index: 2;
+    position: relative;
+}
+
+/* Animação de Brilho (Glow) para Voz */
+.glow-ring {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    opacity: 0;
+    transition: 0.3s;
+}
+
+/* Quando o Vapi detecta volume > 0.05 */
+.avatar-wrapper.speaking .glow-ring {
+    opacity: 1;
+    box-shadow: 0 0 20px var(--accent-purple);
+    border: 2px solid var(--accent-purple);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 0.4; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* Status VIP */
+.avatar-wrapper.is-vip img {
+    border-color: var(--vip-gold);
+}
+
+#vip-tag {
+    position: absolute;
+    bottom: -5px;
+    background: var(--vip-gold);
+    color: black;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    z-index: 3;
+}
+
+/* --- ÁREA DO CHAT --- */
+.chat-area {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.3);
+    margin: 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.msg-bubble {
+    background: var(--msg-bg);
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    width: fit-content;
+    max-width: 85%;
+    font-size: 14px;
+}
+
+.chat-input-row {
+    display: flex;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    gap: 10px;
+}
+
+.chat-input-row input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px;
+    border-radius: 20px;
+    color: white;
+}
+
+/* Rodapé com Botão de Voz */
+footer {
+    padding: 20px;
+    text-align: center;
+}
+
+#btn-action {
+    width: 200px;
+    font-size: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
